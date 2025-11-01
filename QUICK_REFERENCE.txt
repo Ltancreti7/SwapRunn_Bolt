@@ -1,0 +1,26 @@
+🚀 SWAPRUNN APP - QUICK REFERENCE
+=================================
+
+📍 PROJECT LOCATION:
+/Users/ltancreti7/Desktop/swaprunn-live-deploy-main/
+
+🎯 TO LAUNCH ON iPHONE:
+1. Open: ios/App/App.xcworkspace
+2. Connect iPhone
+3. Click ▶️ Run in Xcode
+
+💻 WEB VERSION:
+http://localhost:8080 (when dev server running)
+
+⚡ QUICK COMMANDS:
+npm run dev     → Start development
+npm run build   → Build for production  
+npx cap sync ios → Update iOS app
+
+📱 APP INFO:
+Name: SwapRunn
+ID: com.swaprunn.app
+Platform: iOS 16.0+
+Status: READY TO DEPLOY ✅
+
+Created: October 12, 2025

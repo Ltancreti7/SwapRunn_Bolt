@@ -1,0 +1,21 @@
+version = 1
+
+[[analyzers]]
+name = "secrets"
+
+[[analyzers]]
+name = "sql"
+
+[[analyzers]]
+name = "docker"
+  [analyzers.meta]
+  dockerfile_paths = ["Dockerfile"]
+
+[[analyzers]]
+name = "javascript"
+  [analyzers.meta]
+  plugins = ["react", "typescript"]
+  environment = ["nodejs"]
+
+[[transformers]]
+name = "prettier"

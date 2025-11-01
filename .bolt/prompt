@@ -1,0 +1,40 @@
+Project: SwapRunn
+Description:
+SwapRunn is a logistics platform for auto dealerships that coordinates vehicle moves—dealer trades, customer deliveries, parts runs, and service shuttles—using a network of drivers.
+
+Core Flow:
+- Dealers (salespeople or managers) create delivery or trade requests.
+- Drivers accept and complete these jobs through the app.
+- The system tracks progress, job status, and payouts in real time.
+
+Stack:
+- Frontend: React + Vite + TypeScript
+- Backend: Supabase (PostgreSQL, Auth, Edge Functions)
+- Hosting: Vercel
+- Repo: Ltancreti7/swaprunn-grand-finale (GitHub)
+
+Key Supabase Functions:
+- `dealer_create_job`: Handles creation of new job records by dealers.
+- `driver_accept_job`, `driver_start_job`, `driver_complete_job`: Manage driver workflow.
+- `create_profile_for_current_user`: Creates and syncs profiles post-auth.
+- `get_driver_schedule`: Fetches assigned jobs for drivers.
+
+Environment Variables:
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` (Publishable key)
+- `SUPABASE_SERVICE_ROLE_KEY` (Secret key, private)
+- `VITE_SITE_URL`
+
+Rules:
+- Use RPC functions (e.g., `dealer_create_job`) instead of direct table inserts to respect RLS.
+- Preserve real-time updates and notifications via Supabase channels.
+- When adding new features, maintain parity between dealer and driver flows.
+- Always test authentication, profile creation, and RLS compliance before deployment.
+
+Goals:
+- Fix dealer dashboard “Request Driver” action (should call `dealer_create_job` RPC).
+- Ensure deployments remain stable across Vercel + Supabase.
+- Keep the UX fast and simple for dealership staff.
+
+Preferred tone:
+- Professional, clear, minimal tech jargon for dealership users.

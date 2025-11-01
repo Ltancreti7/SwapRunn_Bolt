@@ -1,0 +1,567 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SwapRunn Design System - Red/Black/White/Gray Brand Colors */
+
+@layer base {
+  :root {
+    /* SwapRunn Brand Colors */
+    --swaprunn-red: 1 96% 44%; /* #E10600 */
+    --swaprunn-black: 0 0% 7%; /* #111111 */
+    --swaprunn-white: 0 0% 100%; /* #FFFFFF */
+    --swaprunn-gray: 218 8% 57%; /* #8A8F98 */
+
+    /* System Colors using SwapRunn brand */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 1 96% 44%; /* SwapRunn Red */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 218 8% 96%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 218 8% 95%;
+    --muted-foreground: 218 8% 40%;
+
+    --accent: 218 8% 95%;
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 218 8% 90%;
+    --input: 218 8% 90%;
+    --ring: 1 96% 44%;
+
+    --radius: 0.75rem;
+
+    /* SwapRunn shadows and animations */
+    --shadow-soft: 0 4px 12px -2px hsl(var(--primary) / 0.08);
+    --shadow-elegant: 0 8px 24px -4px hsl(var(--primary) / 0.12);
+
+    --surface-primary: 0 0% 100%;
+    --surface-secondary: 218 8% 98%;
+
+    --text-primary: 0 0% 7%;
+    --text-secondary: 218 8% 40%;
+    --text-on-red: 0 0% 100%;
+  }
+
+  .dark {
+    /* Dark mode with SwapRunn colors */
+    --background: 0 0% 7%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 1 96% 50%;
+    --primary-foreground: 0 0% 7%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 218 8% 60%;
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 1 96% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #000;
+    @apply text-foreground;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Roboto",
+      sans-serif;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    position: relative;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .swaprunn-card {
+    @apply bg-card border border-border rounded-[var(--radius)] p-6;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .swaprunn-cta {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-4 text-lg font-semibold rounded-[var(--radius)] transition-all duration-200;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .swaprunn-cta:hover {
+    box-shadow: var(--shadow-elegant);
+    transform: translateY(-1px);
+  }
+
+  .swaprunn-logo {
+    @apply flex items-center gap-2 font-bold text-xl;
+  }
+
+  .swaprunn-logo .logo-text {
+    @apply text-foreground;
+  }
+
+  .swaprunn-logo .logo-accent {
+    @apply text-primary;
+  }
+
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-open {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .status-assigned {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300;
+  }
+
+  .status-in-progress {
+    @apply bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300;
+  }
+
+  .status-completed {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300;
+  }
+
+  /* SwapRunn Animated Brand Colors */
+  :root {
+    --sr-white: 0 0% 100%;
+    --sr-red: 1 96% 44%;
+  }
+
+  /* Animated Brand Container */
+  .swaprunn-animated-brand {
+    background: transparent;
+    animation: brand-entrance 2s ease-out;
+  }
+
+  .swaprunn-brand-link:hover .swaprunn-animated-brand,
+  .swaprunn-brand-link:focus .swaprunn-animated-brand {
+    animation: brand-replay 2s ease-out;
+  }
+
+  /* Brand Text Colors */
+  .brand-text-swap {
+    fill: hsl(var(--sr-white));
+  }
+
+  .brand-text-runn {
+    fill: hsl(var(--sr-red));
+  }
+
+  /* Chevron */
+  .brand-chevron {
+    stroke: hsl(var(--sr-white));
+    opacity: 0.7;
+  }
+
+  /* Arrow Styles */
+  .arrow-a,
+  .arrow-b {
+    stroke: hsl(var(--sr-red));
+    stroke-dasharray: 70;
+    stroke-dashoffset: 70;
+  }
+
+  .arrow-marker polygon {
+    fill: hsl(var(--sr-red));
+    opacity: 0;
+  }
+
+  /* Car Icon */
+  .brand-car {
+    transform: translate(200px, 60px) translateY(8px);
+    transition: transform 0.3s ease-out;
+  }
+
+  .car-body,
+  .car-roof {
+    fill: hsl(var(--sr-red));
+  }
+
+  .car-wheel {
+    fill: hsl(var(--sr-white));
+  }
+
+  .car-headlight {
+    fill: hsl(var(--sr-white));
+    opacity: 0;
+  }
+
+  /* Entrance Animation */
+  @keyframes brand-entrance {
+    0% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+    40% {
+      transform: scale(1);
+    }
+    60% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes brand-replay {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    10% {
+      transform: scale(1.04);
+    }
+    20% {
+      transform: scale(1);
+    }
+  }
+
+  /* Arrow Drawing Animation */
+  @keyframes draw-arrow-a {
+    0% {
+      stroke-dashoffset: 70;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes draw-arrow-b {
+    0% {
+      stroke-dashoffset: 70;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes fade-in-arrowhead {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes car-settle {
+    0% {
+      transform: translate(200px, 60px) translateY(8px);
+    }
+    100% {
+      transform: translate(200px, 60px) translateY(0px);
+    }
+  }
+
+  @keyframes headlight-blink {
+    0%,
+    90%,
+    100% {
+      opacity: 0;
+    }
+    95% {
+      opacity: 1;
+    }
+  }
+
+  /* Apply animations with delays */
+  .swaprunn-animated-brand .arrow-a {
+    animation: draw-arrow-a 0.6s ease-out 0.6s forwards;
+  }
+
+  .swaprunn-animated-brand .arrow-a + defs .arrow-marker polygon,
+  .swaprunn-animated-brand marker#arrowhead-a polygon {
+    animation: fade-in-arrowhead 0.3s ease-out 1.2s forwards;
+  }
+
+  .swaprunn-animated-brand .arrow-b {
+    animation: draw-arrow-b 0.7s ease-out 1.3s forwards;
+  }
+
+  .swaprunn-animated-brand marker#arrowhead-b polygon {
+    animation: fade-in-arrowhead 0.3s ease-out 2s forwards;
+  }
+
+  .swaprunn-animated-brand .brand-car {
+    animation: car-settle 0.4s ease-out 2.1s forwards;
+  }
+
+  .swaprunn-animated-brand .car-headlight {
+    animation: headlight-blink 0.5s ease-out 2.5s;
+  }
+
+  /* Hover/Focus Replay */
+  .swaprunn-brand-link:hover .arrow-a,
+  .swaprunn-brand-link:focus .arrow-a {
+    animation: draw-arrow-a 0.6s ease-out forwards;
+  }
+
+  .swaprunn-brand-link:hover .arrow-b,
+  .swaprunn-brand-link:focus .arrow-b {
+    animation: draw-arrow-b 0.7s ease-out 0.7s forwards;
+  }
+
+  .swaprunn-brand-link:hover marker polygon,
+  .swaprunn-brand-link:focus marker polygon {
+    animation: fade-in-arrowhead 0.3s ease-out 0.6s forwards;
+  }
+
+  /* Responsive sizing */
+  header .swaprunn-animated-brand {
+    height: clamp(32px, 6vw, 72px);
+  }
+
+  /* Reduced Motion */
+
+  /* Typography Unification - Match white text to red chip style */
+  :root {
+    --sr-font-chip:
+      Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+      sans-serif;
+  }
+
+  /* Feature/value cards (left/right grid) */
+  .sr-grid6 .card,
+  .sr-grid6 .card * {
+    font-family: var(--sr-font-chip) !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Head line in each card (first line) */
+  .sr-grid6 .card > :first-child {
+    font-weight: 600 !important;
+    font-size: clamp(16px, 2.2vw, 20px) !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Sub line in each card (second line) */
+  .sr-grid6 .card span,
+  .sr-grid6 .card p:not(:first-child) {
+    font-weight: 600 !important; /* match chip weight */
+    font-size: clamp(14px, 1.8vw, 18px) !important;
+    line-height: 1.25 !important;
+    opacity: 0.95;
+  }
+
+  /* Steps section: titles + subs match chip family/weight */
+  .sr-steps h3,
+  .sr-steps p {
+    font-family: var(--sr-font-chip) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Keep hierarchy without heaviness */
+  .sr-steps h3 {
+    font-size: clamp(14px, 1.7vw, 16px) !important;
+  }
+  .sr-steps p {
+    font-size: 13px !important;
+    opacity: 0.92;
+  }
+
+  /* Do not change the red chips themselves (already Inter 600) */
+  .swaprunn-animated-brand,
+  .swaprunn-brand-link:hover .swaprunn-animated-brand,
+  .swaprunn-brand-link:focus .swaprunn-animated-brand {
+    animation: none;
+  }
+
+  .arrow-a,
+  .arrow-b {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .arrow-marker polygon {
+    opacity: 1;
+  }
+
+  .brand-car {
+    transform: translate(200px, 60px) translateY(0px);
+  }
+
+  .car-headlight {
+    opacity: 0;
+  }
+}
+
+/* Header Transparency System */
+header,
+.site-header,
+.navbar,
+.topbar,
+.header-bg,
+header .container,
+header .wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+}
+
+header.is-scrolled {
+  background: rgba(0, 0, 0, 0.82) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* Typography Unification - Match white text to red chip style */
+:root {
+  --sr-font-chip:
+    Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+/* Feature/value cards (works for both homepage and dealer page) */
+.sr-grid6 .card,
+.sr-grid6 .card *,
+.sr-dealers-value .card,
+.sr-dealers-value .card * {
+  font-family: var(--sr-font-chip) !important;
+  letter-spacing: 0 !important;
+}
+
+/* Head line in each card (first line) */
+.sr-grid6 .card > :first-child,
+.sr-dealers-value .card > :first-child {
+  font-weight: 600 !important;
+  font-size: clamp(16px, 2.2vw, 20px) !important;
+  line-height: 1.25 !important;
+}
+
+/* Sub line in each card (second line) */
+.sr-grid6 .card span,
+.sr-grid6 .card p:not(:first-child),
+.sr-dealers-value .card span,
+.sr-dealers-value .card p:not(:first-child) {
+  font-weight: 600 !important; /* match chip weight */
+  font-size: clamp(14px, 1.8vw, 18px) !important;
+  line-height: 1.25 !important;
+  opacity: 0.95;
+}
+
+/* Steps section: titles + subs match chip family/weight (both homepage and dealer) */
+.sr-steps h3,
+.sr-steps p,
+.sr-dealers-steps .step h3,
+.sr-dealers-steps .step p {
+  font-family: var(--sr-font-chip) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Keep hierarchy without heaviness */
+.sr-steps h3,
+.sr-dealers-steps .step h3 {
+  font-size: clamp(14px, 1.7vw, 16px) !important;
+}
+.sr-steps p,
+.sr-dealers-steps .step p {
+  font-size: 13px !important;
+  opacity: 0.92;
+}
+
+/* Do not change the red chips themselves (already Inter 600) */
+
+/* Mobile Safe Area Support */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+body.native-ios {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: 0 !important;
+  }
+
+  header,
+  .header,
+  nav {
+    /* Adjust this number slightly if you ever change your header height */
+    margin-top: calc(env(safe-area-inset-top, 0px) - 12px) !important;
+    position: relative !important;
+    z-index: 1000;
+  }
+}
