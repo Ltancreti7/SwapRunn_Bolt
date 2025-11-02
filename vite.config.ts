@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    historyApiFallback: {
+      rewrites: [
+        { from: /\/dealership\/register/, to: '/signup' },
+      ],
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(
     Boolean,

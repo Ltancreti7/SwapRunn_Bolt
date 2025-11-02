@@ -5,26 +5,24 @@ import { Truck, Shield, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user && userProfile) {
-      switch (userProfile.user_type) {
+    if (!loading && user && profile) {
+      switch (profile.role) {
         case "dealer":
           navigate("/dealer/dashboard");
           break;
         case "driver":
           navigate("/driver/dashboard");
           break;
-        case "swap_coordinator":
-          navigate("/swap-coordinator/dashboard");
-          break;
         default:
-          console.log("Unknown user type:", userProfile.user_type);
+          console.log("Unknown user type:", profile.role);
+          break;
       }
     }
-  }, [user, userProfile, loading, navigate]);
+  }, [user, profile, loading, navigate]);
 
   if (loading) {
     return (
@@ -58,7 +56,7 @@ const Index = () => {
                 asChild
                 className="bg-[#E11900] hover:bg-[#B51400] text-white"
               >
-                <Link to="/dealership/register">Get Started</Link>
+                <Link to="/signup">Get Started</Link>
               </Button>
             </div>
           </div>
@@ -88,20 +86,20 @@ const Index = () => {
                     size="lg"
                     className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-8 py-6"
                   >
-                    <Link to="/dealership/register">Register Your Dealership</Link>
+                    <Link to="/signup">Join SwapRunn</Link>
                   </Button>
                   <Button
                     asChild
                     size="lg"
                     className="bg-neutral-800 border-2 border-neutral-700 text-white hover:bg-neutral-700 hover:border-neutral-600 text-lg px-8 py-6 font-semibold"
                   >
-                    <Link to="/driver/auth">Driver Sign Up</Link>
+                    <Link to="/login">Sign In</Link>
                   </Button>
                 </div>
 
                 <p className="text-sm text-neutral-500">
                   Already have an account?{" "}
-                  <Link to="/dealer/auth" className="text-[#E11900] hover:underline">
+                  <Link to="/login" className="text-[#E11900] hover:underline">
                     Log in →
                   </Link>
                 </p>
@@ -326,7 +324,7 @@ const Index = () => {
                   size="lg"
                   className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-12 py-6"
                 >
-                  <Link to="/dealership/register">Get Started Now</Link>
+                  <Link to="/signup">Get Started Now</Link>
                 </Button>
               </div>
             </div>
@@ -344,7 +342,7 @@ const Index = () => {
                 size="lg"
                 className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-10 py-6"
               >
-                <Link to="/dealership/register">Register Your Dealership</Link>
+                <Link to="/signup">Register Your Dealership</Link>
               </Button>
               <Button
                 asChild
