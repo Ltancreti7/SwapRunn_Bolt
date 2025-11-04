@@ -31,6 +31,7 @@ import DealershipRegistration from "./pages/DealershipRegistration";
 import BillingSettings from "./pages/BillingSettings";
 import SwapCoordinatorAuth from "./pages/SwapCoordinatorAuth";
 import SwapCoordinatorDashboard from "./pages/SwapCoordinatorDashboard";
+import Login from "./pages/Login";
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 import PasswordUpdate from "./pages/PasswordUpdate";
 import DealerPortal from "./pages/DealerPortal";
@@ -61,6 +62,7 @@ const App = () => (
                 <Route path="/about" element={<AboutSwapRunn />} />
                 <Route path="/learn-more" element={<LearnMore />} />
                 <Route path="/why-us" element={<WhyUs />} />
+                <Route path="/login" element={<Login />} />
                 <Route
                   path="/dealers/registration"
                   element={<DealershipRegistration />}

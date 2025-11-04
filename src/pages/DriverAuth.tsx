@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast";
 import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthHeader } from "@/components/AuthHeader";
-import SiteHeader from "@/components/SiteHeader";
 import { ArrowLeft } from "lucide-react";
 import mapBackgroundImage from "@/assets/map-background.jpg";
 import BackButton from "@/components/BackButton";
@@ -95,7 +94,8 @@ const DriverAuth = () => {
 
   // Load saved email on mount
   useEffect(() => {
-    const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
+    if (typeof window === "undefined") return;
+    const savedEmail = window.localStorage.getItem(SAVED_EMAIL_KEY);
 
     if (savedEmail) {
       setEmail(savedEmail);
@@ -103,6 +103,7 @@ const DriverAuth = () => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const params = new URLSearchParams(location.search);
     const mode = params.get("mode");
 
@@ -145,13 +146,14 @@ const DriverAuth = () => {
       const resolvedFullName = (details?.fullName ?? fullName).trim();
       const hasFullName = resolvedFullName.length > 0;
       const resolvedPhoneInput = details?.phone ?? phoneNumber;
-      const cleanedPhone = cleanPhoneNumber(resolvedPhoneInput);
+      const cleanedPhone = cleanPhoneNumber(resolvedPhoneInput ?? "");
+      const normalizedPhone = cleanedPhone || null;
       const dealerId = details?.dealerId ?? selectedDealership;
 
       const { error } = await supabase.rpc("create_profile_for_current_user", {
         _user_type: "driver",
         _name: hasFullName ? resolvedFullName : null,
-        _phone: cleanedPhone,
+        _phone: normalizedPhone,
       });
 
       if (error) throw error;
@@ -223,28 +225,32 @@ const DriverAuth = () => {
     setLoading(true);
 
     try {
-      // Magic link only
-      if (isSignUp) {
-        // Stash signup info to create profile after verification
-        localStorage.setItem(
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPhone = cleanPhoneNumber(phoneNumber) || null;
+
+      if (isSignUp && typeof window !== "undefined") {
+        window.localStorage.setItem(
           PENDING_DRIVER_SIGNUP,
           JSON.stringify({
             fullName,
-            phone: cleanPhoneNumber(phoneNumber),
-            dealerId: selectedDealership
-          })
+            phone: normalizedPhone,
+            dealerId: selectedDealership,
+          }),
         );
       }
 
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: normalizedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/driver/auth?verify=1`,
+          emailRedirectTo:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/driver/auth?verify=1`
+              : undefined,
           shouldCreateUser: true,
           data: {
             user_type: "driver",
             full_name: fullName || undefined,
-            phone_number: cleanPhoneNumber(phoneNumber) || undefined,
+            phone_number: normalizedPhone || undefined,
             dealer_id: isSignUp ? selectedDealership : undefined,
           },
         },
@@ -252,8 +258,13 @@ const DriverAuth = () => {
 
       if (error) throw error;
 
-      localStorage.setItem(SAVED_EMAIL_KEY, email);
-      toast({ title: "Check your email", description: "We sent you a magic link to sign in." });
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(SAVED_EMAIL_KEY, normalizedEmail);
+      }
+      toast({
+        title: "Check your email",
+        description: "We sent you a magic link to sign in.",
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Please try again.";
@@ -285,14 +296,19 @@ const DriverAuth = () => {
       if (!profileCreated) {
         console.warn("Trigger did not create profile, attempting manual creation");
         try {
-          const pendingRaw = localStorage.getItem(PENDING_DRIVER_SIGNUP);
+          const pendingRaw =
+            typeof window !== "undefined"
+              ? window.localStorage.getItem(PENDING_DRIVER_SIGNUP)
+              : null;
           const pending = pendingRaw ? JSON.parse(pendingRaw) : null;
           await createDriverProfile({
             fullName: pending?.fullName || null,
             phone: pending?.phone || null,
             dealerId: pending?.dealerId || null,
           });
-          localStorage.removeItem(PENDING_DRIVER_SIGNUP);
+          if (typeof window !== "undefined") {
+            window.localStorage.removeItem(PENDING_DRIVER_SIGNUP);
+          }
         } catch (e) {
           console.error("Driver profile create on verify failed:", e);
         }

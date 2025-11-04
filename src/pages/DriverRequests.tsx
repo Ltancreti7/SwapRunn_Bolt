@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { supabaseService } from "@/services/supabaseService";
-import SiteHeader from "@/components/SiteHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useDriverNotifications } from "@/hooks/useDriverNotifications";
@@ -41,7 +40,11 @@ const DriverRequests = () => {
   const { markJobsSeen } = useDriverNotifications();
 
   useEffect(() => {
-    if (!authLoading && userProfile?.user_type === "driver") {
+    if (
+      !authLoading &&
+      userProfile?.user_type === "driver" &&
+      userProfile?.driver_id
+    ) {
       fetchRequests();
       // Mark jobs as seen when user visits requests page
       markJobsSeen();
@@ -49,6 +52,11 @@ const DriverRequests = () => {
   }, [authLoading, userProfile, markJobsSeen]);
 
   const fetchRequests = async () => {
+    if (!userProfile?.driver_id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       // Use secure function that excludes customer personal information
       const { data, error } = await supabase.rpc(

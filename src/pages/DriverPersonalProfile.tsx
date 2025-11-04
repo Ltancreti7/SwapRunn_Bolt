@@ -81,8 +81,8 @@ interface AssignmentData {
 interface DriverData {
   id: string;
   name: string;
-  email: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
   rating_avg: number;
   rating_count: number;
   profile_photo_url?: string;

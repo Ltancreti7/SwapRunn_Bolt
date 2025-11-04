@@ -36,9 +36,16 @@ export default function DealerPortal() {
   const { userProfile } = useAuth();
   const [dealerData, setDealerData] = useState<DealerData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [missingDealerProfile, setMissingDealerProfile] = useState(false);
 
   const fetchDealerData = useCallback(async () => {
-    if (!userProfile?.dealer_id) return;
+    if (!userProfile?.dealer_id) {
+      setMissingDealerProfile(true);
+      setLoading(false);
+      return;
+    }
+
+    setMissingDealerProfile(false);
 
     try {
       const { data, error } = await supabase
@@ -71,6 +78,28 @@ export default function DealerPortal() {
         }}
       >
         <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  if (missingDealerProfile) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+        <Card className="max-w-lg bg-black/60 backdrop-blur border border-white/20">
+          <CardContent className="space-y-4 py-8 text-center">
+            <h1 className="text-2xl font-semibold">Dealer profile required</h1>
+            <p className="text-white/70">
+              Your account is not yet linked to a dealership. Contact support or
+              complete dealer onboarding to access the portal.
+            </p>
+            <Button
+              onClick={() => navigate("/dealers/registration")}
+              variant="secondary"
+            >
+              Start dealer registration
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

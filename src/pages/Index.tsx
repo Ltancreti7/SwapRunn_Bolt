@@ -5,12 +5,13 @@ import { Truck, Shield, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user && profile) {
-      switch (profile.role) {
+    if (!loading && user && userProfile) {
+      const role = userProfile.user_type ?? userProfile.role;
+      switch (role) {
         case "dealer":
           navigate("/dealer/dashboard");
           break;
@@ -18,11 +19,11 @@ const Index = () => {
           navigate("/driver/dashboard");
           break;
         default:
-          console.log("Unknown user type:", profile.role);
+          console.log("Unknown user type:", role);
           break;
       }
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, userProfile, loading, navigate]);
 
   if (loading) {
     return (
@@ -47,7 +48,7 @@ const Index = () => {
 
             <div className="flex items-center gap-4">
               <Link
-                to="/dealer/auth"
+                to="/login"
                 className="text-neutral-400 hover:text-white transition-colors text-sm font-medium"
               >
                 Log In
@@ -56,7 +57,7 @@ const Index = () => {
                 asChild
                 className="bg-[#E11900] hover:bg-[#B51400] text-white"
               >
-                <Link to="/signup">Get Started</Link>
+                <Link to="/dealers/registration">Get Started</Link>
               </Button>
             </div>
           </div>
@@ -86,7 +87,7 @@ const Index = () => {
                     size="lg"
                     className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-8 py-6"
                   >
-                    <Link to="/signup">Join SwapRunn</Link>
+                    <Link to="/dealers/registration">Join SwapRunn</Link>
                   </Button>
                   <Button
                     asChild
@@ -324,7 +325,7 @@ const Index = () => {
                   size="lg"
                   className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-12 py-6"
                 >
-                  <Link to="/signup">Get Started Now</Link>
+                  <Link to="/dealers/registration">Get Started Now</Link>
                 </Button>
               </div>
             </div>
@@ -342,7 +343,7 @@ const Index = () => {
                 size="lg"
                 className="bg-[#E11900] hover:bg-[#B51400] text-white text-lg px-10 py-6"
               >
-                <Link to="/signup">Register Your Dealership</Link>
+                <Link to="/dealers/registration">Register Your Dealership</Link>
               </Button>
               <Button
                 asChild

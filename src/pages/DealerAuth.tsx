@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import SiteHeader from "@/components/SiteHeader";
 import { AuthHeader } from "@/components/AuthHeader";
 import { Crown } from "lucide-react";
 import mapBackgroundImage from "@/assets/map-background.jpg";
@@ -51,26 +50,33 @@ const DealerAuth = () => {
   );
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [isAdminSignup, setIsAdminSignup] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
-  // Check for admin role in URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  const isAdminSignup = urlParams.get("role") === "admin";
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(location.search);
+    setIsAdminSignup(params.get("role") === "admin");
+  }, [location.search]);
 
   // Load saved email on mount and check for existing session
   useEffect(() => {
-    const savedEmail = localStorage.getItem(SAVED_EMAIL_KEY);
-    if (savedEmail) {
-      setEmail(savedEmail);
+    if (typeof window !== "undefined") {
+      const savedEmail = window.localStorage.getItem(SAVED_EMAIL_KEY);
+      if (savedEmail) {
+        setEmail(savedEmail);
+      }
     }
 
     // Check if user is already logged in
     const checkExistingSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (session?.user) {
-          // User is already logged in, redirect to their dashboard
           const { data: profile } = await supabase
             .rpc("get_user_profile")
             .maybeSingle();
@@ -80,7 +86,10 @@ const DealerAuth = () => {
               title: "Already Logged In",
               description: "Redirecting to your dashboard...",
             });
-            navigate(isAdminSignup ? "/dealer/admin" : "/dealer/dashboard", { replace: true });
+            navigate(
+              isAdminSignup ? "/dealer/admin" : "/dealer/dashboard",
+              { replace: true },
+            );
             return;
           }
         }
@@ -112,7 +121,10 @@ const DealerAuth = () => {
 
       // Attempt to create profile from pending signup data or metadata
       try {
-        const pendingRaw = localStorage.getItem(PENDING_DEALER_SIGNUP);
+        const pendingRaw =
+          typeof window !== "undefined"
+            ? window.localStorage.getItem(PENDING_DEALER_SIGNUP)
+            : null;
         const pending = pendingRaw ? JSON.parse(pendingRaw) : null;
 
         await createDealerProfile({
@@ -122,7 +134,9 @@ const DealerAuth = () => {
         });
 
         // Clear pending data
-        localStorage.removeItem(PENDING_DEALER_SIGNUP);
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(PENDING_DEALER_SIGNUP);
+        }
       } catch (e) {
         console.warn("Dealer profile create on verify failed, proceeding");
       }
@@ -169,7 +183,8 @@ const DealerAuth = () => {
       const hasFullName = resolvedFullName.length > 0;
       const resolvedCompany = (details?.companyName ?? companyName).trim();
       const hasCompany = resolvedCompany.length > 0;
-      const resolvedPhone = details?.phone?.trim() ?? undefined;
+      const resolvedPhoneRaw = details?.phone?.trim() ?? "";
+      const resolvedPhone = resolvedPhoneRaw.length > 0 ? resolvedPhoneRaw : null;
 
       const { data, error } = await supabase.rpc(
         "create_profile_for_current_user",
@@ -177,7 +192,7 @@ const DealerAuth = () => {
           _user_type: "dealer",
           _company_name: hasCompany ? resolvedCompany : null,
           _name: hasFullName ? resolvedFullName : null,
-          _phone: resolvedPhone ?? null,
+          _phone: resolvedPhone,
         },
       );
       if (error) throw error;
@@ -253,10 +268,16 @@ const DealerAuth = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const emailRedirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/dealer/auth`
+          : "/dealer/auth";
+
       if (isSignUp) {
         // Sign up with email and password
         const { data: authData, error: authError } = await supabase.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
             data: {
@@ -265,7 +286,7 @@ const DealerAuth = () => {
               full_name: `${firstName} ${lastName}`.trim() || undefined,
               company_name: companyName || undefined,
             },
-            emailRedirectTo: `${window.location.origin}/dealer/auth`,
+            emailRedirectTo,
           },
         });
 
@@ -284,7 +305,9 @@ const DealerAuth = () => {
           });
         }
 
-        localStorage.setItem(SAVED_EMAIL_KEY, email);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(SAVED_EMAIL_KEY, normalizedEmail);
+        }
         toast({
           title: "Account created successfully",
           description: "Redirecting to dashboard...",
@@ -295,7 +318,7 @@ const DealerAuth = () => {
       } else {
         // Sign in with email and password
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email,
+          email: normalizedEmail,
           password,
         });
 
@@ -311,7 +334,9 @@ const DealerAuth = () => {
           await tryRepairDealerProfile(authData.user);
         }
 
-        localStorage.setItem(SAVED_EMAIL_KEY, email);
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(SAVED_EMAIL_KEY, normalizedEmail);
+        }
         toast({
           title: "Signed in successfully",
           description: "Redirecting to dashboard...",

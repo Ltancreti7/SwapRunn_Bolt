@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CheckCircle, Calendar, Package, MapPin, User } from "lucide-react";
 import { supabaseService, Job } from "@/services/supabaseService";
-import SiteHeader from "@/components/SiteHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import mapBackgroundImage from "@/assets/map-background.jpg";
 
 const History = () => {
   const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     loadCompletedJobs();
@@ -23,6 +24,11 @@ const History = () => {
       setLoading(false);
     }
   };
+
+  const visibleJobs = useMemo(
+    () => completedJobs.slice(0, visibleCount),
+    [completedJobs, visibleCount],
+  );
 
   if (loading) {
     return (
@@ -88,7 +94,7 @@ const History = () => {
               </Card>
             ) : (
               <div className="grid gap-4">
-                {completedJobs.map((job) => (
+                {visibleJobs.map((job) => (
                   <Card
                     key={job.id}
                     className="hover:shadow-md transition-shadow"
@@ -216,6 +222,17 @@ const History = () => {
                   </Card>
                 ))}
               </div>
+
+              {visibleJobs.length < completedJobs.length && (
+                <div className="text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((prev) => prev + 10)}
+                  >
+                    Load more
+                  </Button>
+                </div>
+              )}
             )}
           </div>
         </div>

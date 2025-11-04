@@ -25,7 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import SiteHeader from "@/components/SiteHeader";
 import { AddDriverDialog } from "@/components/admin/AddDriverDialog";
 import { StaffManagementModal } from "@/components/admin/StaffManagementModal";
 import { MobileOptimizedCard } from "@/components/ui/mobile-optimized-card";
@@ -37,12 +36,14 @@ import { MobileCardSkeleton } from "@/components/ui/mobile-skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DealershipCodeCard } from "@/components/DealershipCodeCard";
 import mapBackgroundImage from "@/assets/map-background.jpg";
+import { PageMeta } from "@/components/PageMeta";
 
 const DealerAdminDashboard = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
   const [staffCount, setStaffCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [missingDealerProfile, setMissingDealerProfile] = useState(false);
   const [showAddDriver, setShowAddDriver] = useState(false);
   const [showStaffManagement, setShowStaffManagement] = useState(false);
   const [showDriversDetail, setShowDriversDetail] = useState(false);
@@ -59,7 +60,12 @@ const DealerAdminDashboard = () => {
   }, [userProfile]);
 
   const fetchAdminData = async () => {
-    if (!userProfile?.dealer_id) return;
+    if (!userProfile?.dealer_id) {
+      setMissingDealerProfile(true);
+      setLoading(false);
+      return;
+    }
+    setMissingDealerProfile(false);
 
     try {
       // Fetch jobs
@@ -112,15 +118,31 @@ const DealerAdminDashboard = () => {
     );
   });
 
+  if (missingDealerProfile) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
+        <Card className="max-w-lg bg-black/60 backdrop-blur border border-white/20">
+          <CardContent className="space-y-4 py-8 text-center">
+            <h1 className="text-2xl font-semibold">Dealer profile required</h1>
+            <p className="text-white/70">
+              Link your account to a dealership to access the admin dashboard.
+            </p>
+            <Button onClick={() => navigate("/dealers/registration")}>
+              Start dealer registration
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <>
-      <title>Admin Dashboard | SwapRunn</title>
-      <meta
-        name="description"
-        content="Admin dashboard for managing drivers, staff, and dealership operations on SwapRunn."
+      <PageMeta
+        title="Admin Dashboard | SwapRunn"
+        description="Admin dashboard for managing drivers, staff, and dealership operations on SwapRunn."
+        canonical="/dealer/admin"
       />
-      <link rel="canonical" href="/dealer/admin" />
-
       <div
         className="min-h-screen"
         style={{

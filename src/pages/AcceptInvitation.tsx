@@ -38,7 +38,11 @@ function AcceptInvitation() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchInvitation = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setError("This invitation link is invalid or has expired.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -104,9 +108,13 @@ function AcceptInvitation() {
     return null;
   }, [dealerMismatch, invitation, profileRole, roleMismatch]);
 
+  const normalizeEmail = (value?: string | null) =>
+    typeof value === "string" ? value.trim().toLowerCase() : null;
   const isLoggedIn = Boolean(user);
+  const invitationEmail = normalizeEmail(invitation?.email);
+  const userEmail = normalizeEmail(user?.email ?? null);
   const emailMatches = Boolean(
-    user && invitation && user.email === invitation.email,
+    invitationEmail && userEmail && invitationEmail === userEmail,
   );
   const canAccept = Boolean(
     emailMatches && !profileLoading && !eligibilityBlockReason,

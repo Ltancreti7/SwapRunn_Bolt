@@ -120,8 +120,6 @@ const DealerDashboard = () => {
       setJobs(data || []);
     } catch (error) {
       logger.error("Error fetching jobs:", error);
-    } finally {
-      setLoading(false);
     }
   }, [userProfile?.dealer_id]);
 
@@ -183,13 +181,30 @@ const DealerDashboard = () => {
     }
   }, [userProfile?.dealer_id]);
 
-  useEffect(() => {
-    if (userProfile?.user_type === "dealer") {
-      fetchJobs();
-      fetchDealerData();
-      fetchActiveAssignments();
+  const initializeDashboard = useCallback(async () => {
+    if (userProfile?.user_type !== "dealer" || !userProfile?.dealer_id) {
+      setLoading(false);
+      return;
     }
-  }, [userProfile, fetchJobs, fetchDealerData, fetchActiveAssignments]);
+
+    setLoading(true);
+    await Promise.all([
+      fetchJobs(),
+      fetchDealerData(),
+      fetchActiveAssignments(),
+    ]);
+    setLoading(false);
+  }, [
+    userProfile?.user_type,
+    userProfile?.dealer_id,
+    fetchJobs,
+    fetchDealerData,
+    fetchActiveAssignments,
+  ]);
+
+  useEffect(() => {
+    void initializeDashboard();
+  }, [initializeDashboard]);
 
   // Enhanced real-time subscription with error recovery
   useEffect(() => {

@@ -11,25 +11,38 @@ import {
 import { supabaseService, Job } from "@/services/supabaseService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BackButton from "@/components/BackButton";
-import SiteHeader from "@/components/SiteHeader";
 import mapBackgroundImage from "@/assets/map-background.jpg";
 
 const Track = () => {
   const { token } = useParams<{ token: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+  const [invalidToken, setInvalidToken] = useState(false);
 
   useEffect(() => {
-    if (token) {
-      loadJob();
+    if (!token) {
+      setInvalidToken(true);
+      setLoading(false);
+      return;
     }
+
+    const sanitizedToken = token.trim();
+    const tokenIsValid = /^[A-Za-z0-9-]{8,}$/.test(sanitizedToken);
+
+    if (!tokenIsValid) {
+      setInvalidToken(true);
+      setLoading(false);
+      return;
+    }
+
+    loadJob(sanitizedToken);
   }, [token]);
 
-  const loadJob = async () => {
-    if (!token) return;
-
+  const loadJob = async (trackingToken: string) => {
     try {
-      const foundJob = await supabaseService.getJobByTrackingToken(token);
+      const foundJob = await supabaseService.getJobByTrackingToken(
+        trackingToken,
+      );
       setJob(foundJob);
     } catch (error) {
       console.error("Error loading job:", error);
@@ -49,6 +62,24 @@ const Track = () => {
             </h1>
             <p className="text-text-secondary">
               Fetching your tracking information...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (invalidToken) {
+    return (
+      <div className="min-h-screen bg-surface-secondary flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <Package className="h-12 w-12 text-text-secondary mx-auto mb-4" />
+            <h1 className="text-xl font-semibold text-text-primary mb-2">
+              Invalid tracking link
+            </h1>
+            <p className="text-text-secondary">
+              Double-check the link you received or request a new tracking link.
             </p>
           </CardContent>
         </Card>

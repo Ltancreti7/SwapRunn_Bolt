@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Loader2,
   DollarSign,
@@ -21,8 +21,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import SiteHeader from "@/components/SiteHeader";
-
 interface SubscriptionData {
   plan_name: string;
   base_price_cents: number;
@@ -50,9 +48,16 @@ export default function BillingSettings() {
     signature_capture: false,
   });
   const [updatingAddOns, setUpdatingAddOns] = useState(false);
+  const [noDealerProfile, setNoDealerProfile] = useState(false);
 
   const fetchSubscription = useCallback(async () => {
-    if (!userProfile?.dealer_id) return;
+    if (!userProfile?.dealer_id) {
+      setNoDealerProfile(true);
+      setLoading(false);
+      return;
+    }
+
+    setNoDealerProfile(false);
 
     try {
       // Mock subscription data since dealer_subscriptions table doesn't exist yet
@@ -87,7 +92,15 @@ export default function BillingSettings() {
   }, [fetchSubscription]);
 
   const handleSubscribe = async () => {
-    if (!userProfile?.dealer_id) return;
+    if (!userProfile?.dealer_id) {
+      toast({
+        title: "Dealership setup required",
+        description:
+          "Link your account to a dealership before starting a subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setLoading(true);
@@ -171,6 +184,20 @@ export default function BillingSettings() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (noDealerProfile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <Alert variant="destructive" className="max-w-lg">
+          <AlertTitle>Dealership setup required</AlertTitle>
+          <AlertDescription>
+            Your account is not linked to a dealership yet. Complete dealer
+            onboarding to manage billing preferences.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }

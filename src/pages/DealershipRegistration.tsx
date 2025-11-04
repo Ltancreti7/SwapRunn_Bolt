@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle, Building2, Copy } from "lucide-react";
+import { CheckCircle, Building2, Copy, Mail } from "lucide-react";
 import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { generateDealershipCode } from "@/lib/dealershipCode";
@@ -28,6 +28,8 @@ const DealershipRegistration = () => {
   const [planType, setPlanType] = useState<"monthly" | "annual">("monthly");
   const [dealershipCode, setDealershipCode] = useState("");
   const [checkingSession, setCheckingSession] = useState(true);
+  const [pendingEmailConfirmation, setPendingEmailConfirmation] =
+    useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -175,6 +177,17 @@ const DealershipRegistration = () => {
         throw authError;
       }
       if (!authData.user) throw new Error("Failed to create user account");
+
+      if (!authData.session) {
+        await logSubmission("success");
+        setPendingEmailConfirmation(true);
+        toast({
+          title: "Check your email",
+          description:
+            "Confirm your email address to finish setting up your dealership account.",
+        });
+        return;
+      }
 
       // Step 2: Wait for trigger to create profile and get dealer_id
       // The handle_new_user trigger runs async, so we need to retry with exponential backoff
@@ -425,6 +438,33 @@ const DealershipRegistration = () => {
                 View Login Page
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (pendingEmailConfirmation) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <Card className="w-full max-w-md bg-[#1A1A1A] border-white/10 text-white">
+          <CardContent className="py-10 space-y-5 text-center">
+            <div className="w-16 h-16 mx-auto bg-[#E11900]/20 rounded-full flex items-center justify-center">
+              <Mail className="w-8 h-8 text-[#E11900]" />
+            </div>
+            <h2 className="text-2xl font-bold">Verify your email</h2>
+            <p className="text-white/70">
+              We just sent a confirmation email to{" "}
+              <strong>{formData.email}</strong>. Click the link inside to finish
+              setting up your dealership account, then return to sign in.
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => navigate("/dealer/auth")}
+              className="w-full"
+            >
+              Go to dealer login
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -831,5 +871,4 @@ const DealershipRegistration = () => {
     </div>
   );
 };
-
 export default DealershipRegistration;

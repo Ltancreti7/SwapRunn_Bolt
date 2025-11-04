@@ -20,9 +20,13 @@ const PasswordResetRequest = () => {
     setLoading(true);
 
     try {
-      const redirectTo = `${window.location.origin}/auth/password-update`;
+      const normalizedEmail = email.trim().toLowerCase();
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/password-update`
+          : "/auth/password-update";
       const { error } = await supabase.auth.resetPasswordForEmail(
-        email.trim(),
+        normalizedEmail,
         {
           redirectTo,
         },
@@ -39,9 +43,10 @@ const PasswordResetRequest = () => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Please try again.";
+      const code = (error as { code?: string })?.code;
       toast({
         title: "Unable to send reset link",
-        description: message,
+        description: code ? `${message} (code: ${code})` : message,
         variant: "destructive",
       });
     } finally {

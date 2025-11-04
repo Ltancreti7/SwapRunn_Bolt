@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,21 @@ const PasswordUpdate = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [sessionReady, setSessionReady] = useState(false);
-
-  const hashParams = useMemo(
-    () => new URLSearchParams(window.location.hash.slice(1)),
-    [],
-  );
-  const isRecovery = hashParams.get("type") === "recovery";
+  const [hashParams, setHashParams] = useState<URLSearchParams | null>(null);
+  const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const params = new URLSearchParams(hash);
+    setHashParams(params);
+    setIsRecovery(params.get("type") === "recovery");
+  }, []);
+
+  useEffect(() => {
+    if (!hashParams) return;
     const accessToken = hashParams.get("access_token");
     const refreshToken = hashParams.get("refresh_token");
 
@@ -63,7 +70,10 @@ const PasswordUpdate = () => {
 
     if (!sessionReady) return;
 
-    if (password !== confirmPassword) {
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (trimmedPassword !== trimmedConfirmPassword) {
       toast({
         title: "Passwords do not match",
         description: "Please confirm your new password.",
@@ -74,7 +84,9 @@ const PasswordUpdate = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await supabase.auth.updateUser({
+        password: trimmedPassword,
+      });
       if (error) throw error;
 
       toast({
@@ -86,9 +98,10 @@ const PasswordUpdate = () => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Something went wrong.";
+      const code = (error as { code?: string })?.code;
       toast({
         title: "Unable to update password",
-        description: message,
+        description: code ? `${message} (code: ${code})` : message,
         variant: "destructive",
       });
     } finally {
