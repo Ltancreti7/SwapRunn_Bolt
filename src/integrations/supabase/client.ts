@@ -6,15 +6,19 @@ import type { Database } from "./types";
 // so existing deploys keep working until you update envs.
 const SUPABASE_URL =
   (typeof process !== "undefined" &&
-    (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL)) ||
-  "https://qnxtxiqedohlqmgtsdnu.supabase.co";
+    (process.env.VITE_SUPABASE_URL ||
+      process.env.SUPABASE_URL ||
+      process.env.SUPABASE_PROJECT_URL)) ||
+  "https://paqezapusrqabwojhwyx.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   (typeof process !== "undefined" &&
     (process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
       process.env.SUPABASE_ANON_KEY ||
       process.env.SUPABASE_KEY)) ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFueHR4aXFlZG9obHFtZ3RzZG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTM4MTcsImV4cCI6MjA3MzU2OTgxN30.oOIqGw4lm30iRtMjTD8uZIOM8vUfYEVejLISZdJRl4M";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhcWV6YXB1c3JxYWJ3b2pod3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MTcyNjEsImV4cCI6MjA3NzQ5MzI2MX0.N4jGJ7nAYz6GcAK8Ajg0v7Dy2-hhcts65iJoW6jCSV4";
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.warn(
