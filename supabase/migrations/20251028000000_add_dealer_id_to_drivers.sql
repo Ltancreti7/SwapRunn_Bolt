@@ -36,56 +36,72 @@ DROP POLICY IF EXISTS "Drivers can update their own profile" ON public.drivers;
 DROP POLICY IF EXISTS "Dealers can view drivers from their dealership" ON public.drivers;
 
 -- Allow drivers to view their own profile
-CREATE POLICY "Drivers can view their own profile" ON public.drivers
-  FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-      AND p.driver_id = drivers.id
-    )
-  );
+DO $$
+BEGIN
+  CREATE POLICY "Drivers can view their own profile" ON public.drivers
+    FOR SELECT TO authenticated
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+        AND p.driver_id = drivers.id
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Allow drivers to update their own profile
-CREATE POLICY "Drivers can update their own profile" ON public.drivers
-  FOR UPDATE TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-      AND p.driver_id = drivers.id
+DO $$
+BEGIN
+  CREATE POLICY "Drivers can update their own profile" ON public.drivers
+    FOR UPDATE TO authenticated
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+        AND p.driver_id = drivers.id
+      )
     )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-      AND p.driver_id = drivers.id
-    )
-  );
+    WITH CHECK (
+      EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+        AND p.driver_id = drivers.id
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Allow dealers to view drivers from their dealership
-CREATE POLICY "Dealers can view drivers from their dealership" ON public.drivers
-  FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-      AND p.user_type = 'dealer'
-      AND p.dealer_id = drivers.dealer_id
-    )
-  );
+DO $$
+BEGIN
+  CREATE POLICY "Dealers can view drivers from their dealership" ON public.drivers
+    FOR SELECT TO authenticated
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+        AND p.user_type = 'dealer'
+        AND p.dealer_id = drivers.dealer_id
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Allow dealers to view all drivers (for potential hiring/assignment)
-CREATE POLICY "Dealers can view all available drivers" ON public.drivers
-  FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-      AND p.user_type = 'dealer'
-    )
-  );
+DO $$
+BEGIN
+  CREATE POLICY "Dealers can view all available drivers" ON public.drivers
+    FOR SELECT TO authenticated
+    USING (
+      EXISTS (
+        SELECT 1 FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+        AND p.user_type = 'dealer'
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Grant necessary permissions
 GRANT SELECT, UPDATE ON public.drivers TO authenticated;

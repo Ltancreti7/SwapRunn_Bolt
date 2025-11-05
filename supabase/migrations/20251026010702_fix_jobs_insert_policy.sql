@@ -18,18 +18,22 @@
 DROP POLICY IF EXISTS "Dealers can insert jobs" ON jobs;
 
 -- Create a new, properly functioning INSERT policy
-CREATE POLICY "Dealers can insert jobs"
-  ON jobs
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    -- Check that the user is a dealer with a dealer_id
-    EXISTS (
-      SELECT 1
-      FROM profiles p
-      WHERE p.user_id = auth.uid()
-        AND p.user_type = 'dealer'
-        AND p.dealer_id IS NOT NULL
-        AND p.dealer_id = jobs.dealer_id
-    )
-  );
+DO $$
+BEGIN
+  CREATE POLICY "Dealers can insert jobs"
+    ON jobs
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      -- Check that the user is a dealer with a dealer_id
+      EXISTS (
+        SELECT 1
+        FROM profiles p
+        WHERE p.user_id = auth.uid()
+          AND p.user_type = 'dealer'
+          AND p.dealer_id IS NOT NULL
+          AND p.dealer_id = jobs.dealer_id
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

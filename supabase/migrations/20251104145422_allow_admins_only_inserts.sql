@@ -31,7 +31,7 @@ CREATE POLICY "Admins can insert drivers" ON public.drivers
       SELECT 1
       FROM public.profiles p
       WHERE p.user_id = auth.uid()
-        AND p.user_type = 'admin'
+        AND p.user_type::text = 'admin'
     )
   );
 
@@ -70,7 +70,7 @@ BEGIN
             SELECT 1
             FROM public.profiles p
             WHERE p.user_id = auth.uid()
-              AND p.user_type = 'admin'
+              AND p.user_type::text = 'admin'
           )
         )
     $policy$;

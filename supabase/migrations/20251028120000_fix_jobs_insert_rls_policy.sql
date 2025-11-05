@@ -16,20 +16,24 @@
 DROP POLICY IF EXISTS "Dealers can insert jobs" ON public.jobs;
 
 -- Create a new, properly scoped INSERT policy with explicit table qualification
-CREATE POLICY "Dealers can insert jobs"
-  ON public.jobs
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public.profiles p
-      WHERE p.user_id = auth.uid()
-        AND p.user_type = 'dealer'
-        AND p.dealer_id IS NOT NULL
-        AND p.dealer_id = public.jobs.dealer_id  -- Explicitly qualify the jobs table
-    )
-  );
+DO $$
+BEGIN
+  CREATE POLICY "Dealers can insert jobs"
+    ON public.jobs
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      EXISTS (
+        SELECT 1
+        FROM public.profiles p
+        WHERE p.user_id = auth.uid()
+          AND p.user_type = 'dealer'
+          AND p.dealer_id IS NOT NULL
+          AND p.dealer_id = public.jobs.dealer_id  -- Explicitly qualify the jobs table
+      )
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Grant necessary permissions
 GRANT INSERT ON public.jobs TO authenticated;
