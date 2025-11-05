@@ -3,15 +3,15 @@ SET check_function_bodies = false;
 
 -- Minimal get_user_profile used by early policies
 CREATE OR REPLACE FUNCTION public.get_user_profile()
+-- Shape this to match the later canonical signature in 20251105044806_remote_schema.sql
 RETURNS TABLE(
   id UUID,
-  user_id UUID,
-  user_type user_type,
+  user_type TEXT,
   full_name TEXT,
   phone TEXT,
-  dealer_id UUID,
-  status TEXT,
-  avatar_url TEXT
+  dealership_name TEXT,
+  business_size TEXT,
+  selected_plan TEXT
 )
 LANGUAGE sql
 STABLE SECURITY DEFINER
@@ -19,14 +19,14 @@ SET search_path = 'public'
 AS $$
   SELECT 
     p.id,
-    p.user_id,
-    p.user_type,
+    p.user_type::text,
     p.full_name,
     p.phone,
-    p.dealer_id,
-    p.status,
-    p.avatar_url
+    dp.dealership_name,
+    dp.business_size,
+    dp.selected_plan
   FROM public.profiles p
+  LEFT JOIN public.dealership_profiles dp ON p.user_id = dp.user_id
   WHERE p.user_id = auth.uid();
 $$;
 
@@ -38,4 +38,3 @@ EXCEPTION WHEN undefined_object THEN
   -- If role doesn't exist in shadow context, ignore
   NULL;
 END $$;
-
