@@ -6,12 +6,13 @@ CREATE OR REPLACE FUNCTION public.get_user_profile()
 -- Shape this to match the later canonical signature in 20251105044806_remote_schema.sql
 RETURNS TABLE(
   id UUID,
+  user_id UUID,
   user_type TEXT,
   full_name TEXT,
   phone TEXT,
-  dealership_name TEXT,
-  business_size TEXT,
-  selected_plan TEXT
+  dealer_id UUID,
+  status TEXT,
+  avatar_url TEXT
 )
 LANGUAGE sql
 STABLE SECURITY DEFINER
@@ -19,14 +20,14 @@ SET search_path = 'public'
 AS $$
   SELECT 
     p.id,
-    p.user_type::text,
+    p.user_id,
+    p.user_type,
     p.full_name,
     p.phone,
-    dp.dealership_name,
-    dp.business_size,
-    dp.selected_plan
+    p.dealer_id,
+    p.status,
+    p.avatar_url
   FROM public.profiles p
-  LEFT JOIN public.dealership_profiles dp ON p.user_id = dp.user_id
   WHERE p.user_id = auth.uid();
 $$;
 
