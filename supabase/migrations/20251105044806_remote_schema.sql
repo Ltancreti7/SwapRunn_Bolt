@@ -52,12 +52,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 
 
-CREATE TYPE "public"."user_type" AS ENUM (
-    'dealer',
-    'driver',
-    'staff',
-    'admin'
-);
+DO $$
+BEGIN
+  CREATE TYPE "public"."user_type" AS ENUM (
+      'dealer',
+      'driver',
+      'staff',
+      'admin'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 
 ALTER TYPE "public"."user_type" OWNER TO "postgres";
@@ -1088,5 +1092,4 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 drop extension if exists "pg_net";
 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_dealer();
-
 
