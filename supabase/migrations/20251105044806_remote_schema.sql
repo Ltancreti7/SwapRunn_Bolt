@@ -173,24 +173,36 @@ $$;
 ALTER FUNCTION "public"."create_dealer_profile"("p_user_id" "uuid", "dealership_name" "text", "contact_name" "text", "business_email" "text", "address" "text", "phone" "text", "website" "text", "business_size" "text", "selected_plan" "text", "heard_about" "text", "primary_brands" "text"[], "vehicle_types" "text"[], "average_inventory" "text", "monthly_deliveries" "text", "service_radius" "text", "primary_service_areas" "text", "special_delivery_needs" "text", "operating_hours" "text", "weekend_service" boolean, "after_hours_service" boolean, "sales_staff_count" "text", "service_staff_count" "text", "existing_delivery_staff" "text", "current_dms" "text", "current_crm" "text", "has_inventory_system" boolean, "needs_integration" boolean) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_user_profile"() RETURNS TABLE("id" "uuid", "user_type" "text", "full_name" "text", "phone" "text", "dealership_name" "text", "business_size" "text", "selected_plan" "text")
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
+DO $$
 BEGIN
-    RETURN QUERY
-    SELECT 
-        p.id,
-        p.user_type::TEXT,
-        p.full_name,
-        p.phone,
-        dp.dealership_name,
-        dp.business_size,
-        dp.selected_plan
-    FROM profiles p
-    LEFT JOIN dealership_profiles dp ON p.user_id = dp.user_id
-    WHERE p.user_id = auth.uid();
-END;
-$$;
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'get_user_profile'
+      AND p.pronargs = 0
+  ) THEN
+    CREATE OR REPLACE FUNCTION "public"."get_user_profile"() RETURNS TABLE("id" "uuid", "user_type" "text", "full_name" "text", "phone" "text", "dealership_name" "text", "business_size" "text", "selected_plan" "text")
+        LANGUAGE "plpgsql" SECURITY DEFINER
+        AS $$
+    BEGIN
+        RETURN QUERY
+        SELECT 
+            p.id,
+            p.user_type::TEXT,
+            p.full_name,
+            p.phone,
+            dp.dealership_name,
+            dp.business_size,
+            dp.selected_plan
+        FROM profiles p
+        LEFT JOIN dealership_profiles dp ON p.user_id = dp.user_id
+        WHERE p.user_id = auth.uid();
+    END;
+    $$;
+  END IF;
+END $$;
 
 
 ALTER FUNCTION "public"."get_user_profile"() OWNER TO "postgres";
@@ -1092,4 +1104,3 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 drop extension if exists "pg_net";
 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_dealer();
-
