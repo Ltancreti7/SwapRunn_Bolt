@@ -57,44 +57,45 @@ DROP POLICY IF EXISTS "Dealers can manage staff" ON public.dealership_staff;
 DROP POLICY IF EXISTS "Dealers can manage invitations" ON public.staff_invitations;
 DROP POLICY IF EXISTS "Dealers can view their usage" ON public.swap_usage_records;
 
-DROP FUNCTION IF EXISTS public.get_user_profile();
+-- DROP FUNCTION IF EXISTS public.get_user_profile();
 
-CREATE OR REPLACE FUNCTION public.get_user_profile()
-RETURNS TABLE(
-  id UUID,
-  user_id UUID,
-  user_type public.user_type,
-  full_name TEXT,
-  first_name TEXT,
-  last_name TEXT,
-  phone TEXT,
-  dealer_id UUID,
-  driver_id UUID,
-  swap_coordinator_id UUID,
-  status TEXT,
-  avatar_url TEXT
-)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = 'public'
-AS $$
-  SELECT
-    p.id,
-    p.user_id,
-    p.user_type,
-    p.full_name,
-    p.first_name,
-    p.last_name,
-    p.phone,
-    p.dealer_id,
-    p.driver_id,
-    p.swap_coordinator_id,
-    p.status,
-    p.avatar_url
-  FROM public.profiles p
-  WHERE p.user_id = auth.uid();
-$$;
+-- Disabled duplicate get_user_profile
+-- CREATE OR REPLACE FUNCTION public.get_user_profile()
+-- RETURNS TABLE(
+--   id UUID,
+--   user_id UUID,
+--   user_type public.user_type,
+--   full_name TEXT,
+--   first_name TEXT,
+--   last_name TEXT,
+--   phone TEXT,
+--   dealer_id UUID,
+--   driver_id UUID,
+--   swap_coordinator_id UUID,
+--   status TEXT,
+--   avatar_url TEXT
+-- )
+-- LANGUAGE sql
+-- STABLE
+-- SECURITY DEFINER
+-- SET search_path = 'public'
+-- AS $$
+--   SELECT
+--     p.id,
+--     p.user_id,
+--     p.user_type,
+--     p.full_name,
+--     p.first_name,
+--     p.last_name,
+--     p.phone,
+--     p.dealer_id,
+--     p.driver_id,
+--     p.swap_coordinator_id,
+--     p.status,
+--     p.avatar_url
+--   FROM public.profiles p
+--   WHERE p.user_id = auth.uid();
+-- $$;
 
 GRANT EXECUTE ON FUNCTION public.get_user_profile() TO authenticated;
 
