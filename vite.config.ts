@@ -6,7 +6,8 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    // Bind to IPv4 for Codespaces/containers so the port is reachable externally
+    host: "0.0.0.0",
     port: 8080,
     historyApiFallback: {
       rewrites: [
@@ -39,7 +40,7 @@ export default defineConfig(({ mode }) => ({
           'dealer-operations': ['./src/pages/CreateJob.tsx', './src/pages/DealerSettings.tsx'],
           'driver-pages': [
             './src/pages/DriverAuth.tsx',
-            './src/pages/DriverDashboard.tsx',
+            './src/pages/DriverDashboard.jsx',
             './src/pages/DriverPersonalProfile.tsx',
             './src/pages/DriverRequests.tsx'
           ],

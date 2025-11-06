@@ -18,6 +18,7 @@ import {
   Mail,
   Star,
   MapPin,
+  Building2,
 } from "lucide-react";
 import {
   Dialog,
@@ -35,6 +36,7 @@ import { MobileActionButton } from "@/components/ui/mobile-action-button";
 import { MobileCardSkeleton } from "@/components/ui/mobile-skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DealershipCodeCard } from "@/components/DealershipCodeCard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import mapBackgroundImage from "@/assets/map-background.jpg";
 import { PageMeta } from "@/components/PageMeta";
 
@@ -118,6 +120,29 @@ const DealerAdminDashboard = () => {
     );
   });
 
+  const adminName =
+    userProfile?.full_name ||
+    userProfile?.display_name ||
+    user?.email ||
+    "Dealer Admin";
+  const adminEmail = userProfile?.email || user?.email || "";
+  const dealerName =
+    userProfile?.dealers?.name || userProfile?.dealer_name || "";
+  const adminPhone = userProfile?.phone || userProfile?.dealers?.phone || "";
+  const dealerLocation = [
+    userProfile?.dealers?.city,
+    userProfile?.dealers?.state,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const profilePhoto = userProfile?.profile_photo_url;
+  const adminInitials = adminName
+    .split(" ")
+    .filter(Boolean)
+    .map((segment) => segment[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2) || "SR";
+
   if (missingDealerProfile) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
@@ -173,28 +198,85 @@ const DealerAdminDashboard = () => {
                 </p>
               </div>
 
-              {/* Quick Actions */}
-              <div
-                className={`grid gap-4 mb-8 ${isMobile ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
-              >
-                <MobileActionButton
-                  onClick={() => setShowAddDriver(true)}
-                  size="lg"
-                  className="w-full bg-[#E11900] hover:bg-[#E11900]/90 text-white font-semibold py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <UserPlus className="w-5 h-5 mr-2" />
-                  Add Driver
-                </MobileActionButton>
+              {/* Admin Profile */}
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white mb-8">
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16 border border-white/20">
+                        {profilePhoto ? (
+                          <AvatarImage src={profilePhoto} alt={adminName} />
+                        ) : (
+                          <AvatarFallback className="bg-white/10 text-lg font-semibold text-white">
+                            {adminInitials}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <h2 className="text-2xl font-semibold text-white">
+                          {adminName}
+                        </h2>
+                        {dealerName && (
+                          <div className="flex items-center gap-2 text-white/70 text-sm">
+                            <Building2 className="w-4 h-4 text-white/50" />
+                            <span>{dealerName}</span>
+                          </div>
+                        )}
+                        {adminEmail && (
+                          <div className="flex items-center gap-2 text-white/60 text-sm mt-1">
+                            <Mail className="w-4 h-4 text-white/50" />
+                            <span className="break-all">{adminEmail}</span>
+                          </div>
+                        )}
+                        {adminPhone && (
+                          <div className="flex items-center gap-2 text-white/60 text-sm mt-1">
+                            <Phone className="w-4 h-4 text-white/50" />
+                            <span>{adminPhone}</span>
+                          </div>
+                        )}
+                        {dealerLocation && (
+                          <div className="flex items-center gap-2 text-white/60 text-sm mt-1">
+                            <MapPin className="w-4 h-4 text-white/50" />
+                            <span>{dealerLocation}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-white/60 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-yellow-300" />
+                        <span>Admin privileges enabled</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-white/50" />
+                        <span>{jobs.length} total jobs</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                    <MobileActionButton
+                      onClick={() => setShowAddDriver(true)}
+                      size="lg"
+                      className="w-full bg-[#E11900] hover:bg-[#E11900]/90 text-white font-semibold py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <UserPlus className="w-5 h-5 mr-2" />
+                      Add Driver
+                    </MobileActionButton>
+                    <MobileActionButton
+                      onClick={() => setShowStaffManagement(true)}
+                      size="lg"
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 font-semibold py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Users className="w-5 h-5 mr-2" />
+                      Add Staff Member
+                    </MobileActionButton>
+                  </div>
+                </CardContent>
+              </Card>
 
-                <MobileActionButton
-                  onClick={() => setShowStaffManagement(true)}
-                  size="lg"
-                  variant="outline"
-                  className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 font-semibold py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <Users className="w-5 h-5 mr-2" />
-                  Add Employee
-                </MobileActionButton>
+              <div className="mb-8">
+                <DealershipCodeCard />
               </div>
 
               {/* Admin Stats */}

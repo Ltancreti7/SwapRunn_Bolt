@@ -1,3 +1,4 @@
+import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Job {
@@ -38,6 +39,7 @@ export interface Job {
   started_at?: string | null;
   ended_at?: string | null;
   assignment_id?: string | null;
+  assigned_driver?: string | null;
   // Driver-specific fields
   dealer_name?: string | null;
   dealer_store?: string | null;
@@ -104,8 +106,43 @@ export interface DriverOpenJob {
 }
 
 class SupabaseService {
+  private async requireSession(): Promise<{
+    user: User;
+    session: Session;
+  }> {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      throw userError;
+    }
+
+    if (!user) {
+      throw new Error("Session missing. Login required.");
+    }
+
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    if (!session) {
+      throw new Error("Session token missing. Please sign in again.");
+    }
+
+    return { user, session };
+  }
+
   // Job Management
   async listJobs(): Promise<Job[]> {
+    await this.requireSession();
+
     const { data, error } = await supabase
       .from("jobs")
       .select(
@@ -136,24 +173,50 @@ class SupabaseService {
   }
 
   async createJob(jobData: CreateJobData): Promise<Job> {
-    const { dealerId, createdBy, distance_miles, requires_two, ...columns } =
-      jobData;
+    const {
+      session: { access_token: accessToken },
+    } = await this.requireSession();
 
-    const { data, error } = await supabase
-      .from("jobs")
-      .insert({
-        ...columns,
-        dealer_id: dealerId,
-        created_by: createdBy,
-        distance_miles: distance_miles ?? 25,
-        requires_two: requires_two ?? false,
-        status: "open",
-      })
-      .select()
-      .single();
+    if (!accessToken) {
+      throw new Error("Session token missing. Please sign in again.");
+    }
 
-    if (error) throw error;
-    return data;
+    const response = await fetch("/api/addJob", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        type: jobData.type,
+        pickup_address: jobData.pickup_address,
+        delivery_address: jobData.delivery_address,
+        year: jobData.year,
+        make: jobData.make,
+        model: jobData.model,
+        vin: jobData.vin ?? null,
+        customer_name: jobData.customer_name,
+        customer_phone: jobData.customer_phone ?? null,
+        timeframe: jobData.timeframe ?? null,
+        notes: jobData.notes ?? null,
+        requires_two: jobData.requires_two ?? false,
+        distance_miles: jobData.distance_miles ?? 25,
+        trade_year: jobData.trade_year ?? null,
+        trade_make: jobData.trade_make ?? null,
+        trade_model: jobData.trade_model ?? null,
+        trade_vin: jobData.trade_vin ?? null,
+        trade_transmission: jobData.trade_transmission ?? null,
+        dealer_id: jobData.dealerId,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result?.success) {
+      throw new Error(result?.error || "Failed to create job");
+    }
+
+    return result.job as Job;
   }
 
   async getJobById(id: string): Promise<Job | null> {
@@ -238,7 +301,14 @@ class SupabaseService {
     };
   }
 
-  async acceptJob(jobId: string, driverId: string): Promise<Job | null> {
+  async acceptJob(jobId: string, driverId?: string): Promise<Job | null> {
+    const { user } = await this.requireSession();
+    const activeDriverId = driverId ?? user.id;
+
+    if (!activeDriverId) {
+      throw new Error("Unable to determine driver for job acceptance.");
+    }
+
     // Check if job is already assigned
     const { data: existingAssignment } = await supabase
       .from("assignments")
@@ -247,12 +317,18 @@ class SupabaseService {
       .maybeSingle();
 
     // If job is already assigned to a different driver, throw specific error
-    if (existingAssignment && existingAssignment.driver_id !== driverId) {
+    if (
+      existingAssignment &&
+      existingAssignment.driver_id !== activeDriverId
+    ) {
       throw new Error("JOB_ALREADY_TAKEN");
     }
 
     // If job is already assigned to this driver, return the job
-    if (existingAssignment && existingAssignment.driver_id === driverId) {
+    if (
+      existingAssignment &&
+      existingAssignment.driver_id === activeDriverId
+    ) {
       return this.getJobById(jobId);
     }
 
@@ -261,7 +337,7 @@ class SupabaseService {
       .from("assignments")
       .insert({
         job_id: jobId,
-        driver_id: driverId,
+        driver_id: activeDriverId,
         accepted_at: new Date().toISOString(),
       })
       .select()
@@ -278,7 +354,10 @@ class SupabaseService {
     // Update job status
     const { error: jobError } = await supabase
       .from("jobs")
-      .update({ status: "assigned" })
+      .update({
+        status: "assigned",
+        assigned_driver: activeDriverId,
+      })
       .eq("id", jobId);
 
     if (jobError) throw jobError;
@@ -287,6 +366,8 @@ class SupabaseService {
   }
 
   async clockIn(jobId: string, assignmentId: string): Promise<Job | null> {
+    await this.requireSession();
+
     // Update assignment start time
     const { error: assignmentError } = await supabase
       .from("assignments")
@@ -307,6 +388,8 @@ class SupabaseService {
   }
 
   async clockOut(jobId: string, assignmentId: string): Promise<Job | null> {
+    await this.requireSession();
+
     // Update assignment end time
     const { error: assignmentError } = await supabase
       .from("assignments")
@@ -326,8 +409,10 @@ class SupabaseService {
     return this.getJobById(jobId);
   }
 
-  // Driver Management - Note: Using profiles table since drivers table doesn't exist
+  // Driver Management - fetch driver profiles linked to authenticated dealership
   async getDrivers(): Promise<Driver[]> {
+    await this.requireSession();
+
     const { data, error } = await supabase
       .from("profiles")
       .select("*")

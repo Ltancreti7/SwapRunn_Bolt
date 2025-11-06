@@ -13,6 +13,7 @@ import { Crown } from "lucide-react";
 import mapBackgroundImage from "@/assets/map-background.jpg";
 import BackButton from "@/components/BackButton";
 import type { User } from "@supabase/supabase-js";
+import { createProfileForCurrentUser } from "@/utils/createProfileForCurrentUser";
 
 type DealerMetadata = {
   user_type?: string;
@@ -186,17 +187,13 @@ const DealerAuth = () => {
       const resolvedPhoneRaw = details?.phone?.trim() ?? "";
       const resolvedPhone = resolvedPhoneRaw.length > 0 ? resolvedPhoneRaw : null;
 
-      const { data, error } = await supabase.rpc(
-        "create_profile_for_current_user",
-        {
-          _user_type: "dealer",
-          _company_name: hasCompany ? resolvedCompany : null,
-          _name: hasFullName ? resolvedFullName : null,
-          _phone: resolvedPhone,
-        },
-      );
-      if (error) throw error;
-      return data;
+      // Prefer backend RPC; fallback to local bootstrap when missing
+      return await createProfileForCurrentUser({
+        userType: "dealer",
+        companyName: hasCompany ? resolvedCompany : null,
+        name: hasFullName ? resolvedFullName : null,
+        phone: resolvedPhone,
+      });
     } catch (error) {
       console.error("Error creating dealer profile:", error);
       throw error;

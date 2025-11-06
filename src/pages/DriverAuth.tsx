@@ -150,13 +150,12 @@ const DriverAuth = () => {
       const normalizedPhone = cleanedPhone || null;
       const dealerId = details?.dealerId ?? selectedDealership;
 
-      const { error } = await supabase.rpc("create_profile_for_current_user", {
-        _user_type: "driver",
-        _name: hasFullName ? resolvedFullName : null,
-        _phone: normalizedPhone,
+      // Use helper that falls back when the RPC is missing
+      await (await import("@/utils/createProfileForCurrentUser")).createProfileForCurrentUser({
+        userType: "driver",
+        name: hasFullName ? resolvedFullName : null,
+        phone: normalizedPhone,
       });
-
-      if (error) throw error;
 
       // Update driver record with dealer_id if provided
       if (dealerId) {

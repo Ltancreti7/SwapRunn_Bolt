@@ -55,13 +55,53 @@ export function AddDriverDialog({
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("drivers")
-        .insert([formData])
-        .select()
-        .single();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (error) throw error;
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        throw new Error("Session missing. Login required.");
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error("Session token missing. Please sign in again.");
+      }
+
+      const response = await fetch("/api/addDriver", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          phone: formData.phone.trim() || null,
+          checkr_status: formData.checkr_status,
+          available: formData.available,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Failed to add driver");
+      }
 
       toast({
         title: "Success",

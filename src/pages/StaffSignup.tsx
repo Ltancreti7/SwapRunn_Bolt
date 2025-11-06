@@ -90,23 +90,26 @@ const StaffSignup = () => {
         throw new Error("Dealership not found. Please contact support.");
       }
 
-      // Create the staff member using the edge function
-      const { data, error } = await supabase.functions.invoke(
-        "create-staff-member",
-        {
-          body: {
-            email,
-            password,
-            name: `${firstName} ${lastName}`,
-            role: position,
-            dealership_id: dealership.id,
-            phone,
-            is_staff_member: true,
-          },
+      const response = await fetch("/api/addStaff", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          email,
+          password,
+          name: `${firstName} ${lastName}`,
+          role: position,
+          dealership_id: dealership.id,
+          phone,
+          is_staff_member: true,
+        }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Failed to create staff account");
+      }
 
       toast({
         title: "Account created successfully!",

@@ -194,7 +194,7 @@ const handler = async (req: Request): Promise<Response> => {
       .upsert(
         {
           user_id: authUserId,
-          user_type: "dealer",
+          user_type: "staff",
           dealer_id: targetDealerId,
           full_name: fullName,
           first_name: firstName || fullName.split(" ")[0] || "",
@@ -217,7 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 4. Upsert staff membership (idempotent)
     const { data: staffRecord, error: staffError } = await supabaseAdmin
-      .from("dealership_staff")
+      .from("staff")
       .upsert(
         {
           user_id: authUserId,

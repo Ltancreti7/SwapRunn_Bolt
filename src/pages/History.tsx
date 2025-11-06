@@ -16,6 +16,7 @@ const History = () => {
 
   const loadCompletedJobs = async () => {
     try {
+      setLoading(true);
       const jobs = await supabaseService.getCompletedJobs();
       setCompletedJobs(jobs);
     } catch (error) {
@@ -29,24 +30,6 @@ const History = () => {
     () => completedJobs.slice(0, visibleCount),
     [completedJobs, visibleCount],
   );
-
-  if (loading) {
-    return (
-      <div
-        className="min-h-screen relative"
-        style={{
-          backgroundImage: `url(${mapBackgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/38 to-black/65"></div>
-        <div className="relative z-10 flex items-center justify-center h-64 pt-24">
-          <div className="text-white/70">Loading job history...</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -93,7 +76,8 @@ const History = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
+              <>
+                <div className="grid gap-4">
                 {visibleJobs.map((job) => (
                   <Card
                     key={job.id}
@@ -220,19 +204,20 @@ const History = () => {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-
-              {visibleJobs.length < completedJobs.length && (
-                <div className="text-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => setVisibleCount((prev) => prev + 10)}
-                  >
-                    Load more
-                  </Button>
+                  ))}
                 </div>
-              )}
+
+                {visibleJobs.length < completedJobs.length && (
+                  <div className="text-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setVisibleCount((prev) => prev + 10)}
+                    >
+                      Load more
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

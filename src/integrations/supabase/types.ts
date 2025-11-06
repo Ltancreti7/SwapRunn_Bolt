@@ -111,6 +111,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      dealership_profiles: {
+        Row: {
+          address: string | null;
+          created_at: string | null;
+          email: string | null;
+          id: string;
+          name: string;
+          phone: string | null;
+          store: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          address?: string | null;
+          created_at?: string | null;
+          email?: string | null;
+          id?: string;
+          name: string;
+          phone?: string | null;
+          store?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          address?: string | null;
+          created_at?: string | null;
+          email?: string | null;
+          id?: string;
+          name?: string;
+          phone?: string | null;
+          store?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       dealership_staff: {
         Row: {
           dealer_id: string;
@@ -147,7 +180,48 @@ export type Database = {
             foreignKeyName: "dealership_staff_dealer_id_fkey";
             columns: ["dealer_id"];
             isOneToOne: false;
-            referencedRelation: "dealers";
+            referencedRelation: "dealership_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff: {
+        Row: {
+          dealer_id: string;
+          id: string;
+          invited_by: string | null;
+          is_active: boolean | null;
+          joined_at: string | null;
+          role: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          dealer_id: string;
+          id?: string;
+          invited_by?: string | null;
+          is_active?: boolean | null;
+          joined_at?: string | null;
+          role: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          dealer_id?: string;
+          id?: string;
+          invited_by?: string | null;
+          is_active?: boolean | null;
+          joined_at?: string | null;
+          role?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "dealership_staff_dealer_id_fkey";
+            columns: ["dealer_id"];
+            isOneToOne: false;
+            referencedRelation: "dealership_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -221,6 +295,7 @@ export type Database = {
           updated_at: string | null;
           vin: string | null;
           year: number | null;
+          assigned_driver: string | null;
         };
         Insert: {
           created_at?: string | null;
@@ -248,6 +323,7 @@ export type Database = {
           updated_at?: string | null;
           vin?: string | null;
           year?: number | null;
+          assigned_driver?: string | null;
         };
         Update: {
           created_at?: string | null;
@@ -275,6 +351,7 @@ export type Database = {
           updated_at?: string | null;
           vin?: string | null;
           year?: number | null;
+          assigned_driver?: string | null;
         };
         Relationships: [
           {

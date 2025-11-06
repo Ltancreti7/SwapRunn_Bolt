@@ -24,10 +24,12 @@ const Logo: React.FC<LogoProps> = ({
   const getLogoRoute = () => {
     if (!user) return "/";
 
-    if (userProfile?.user_type === "dealer") {
+    if (userProfile?.user_type === "dealer" || userProfile?.user_type === "staff") {
       return "/dealer/dashboard";
     } else if (userProfile?.user_type === "driver") {
       return "/driver/dashboard";
+    } else if (userProfile?.user_type === "admin") {
+      return "/dealer/admin";
     }
 
     return "/";

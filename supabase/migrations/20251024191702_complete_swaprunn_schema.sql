@@ -165,33 +165,34 @@ CREATE INDEX idx_dealership_staff_user_id ON public.dealership_staff(user_id);
 CREATE INDEX idx_dealership_staff_dealer_id ON public.dealership_staff(dealer_id);
 
 -- Create user profile function
-CREATE OR REPLACE FUNCTION public.get_user_profile()
-RETURNS TABLE(
-  id UUID,
-  user_id UUID,
-  user_type user_type,
-  full_name TEXT,
-  phone TEXT,
-  dealer_id UUID,
-  status TEXT,
-  avatar_url TEXT
-)
-LANGUAGE sql
-STABLE SECURITY DEFINER
-SET search_path = 'public'
-AS $function$
-  SELECT 
-    p.id,
-    p.user_id,
-    p.user_type,
-    p.full_name,
-    p.phone,
-    p.dealer_id,
-    p.status,
-    p.avatar_url
-  FROM public.profiles p
-  WHERE p.user_id = auth.uid();
-$function$;
+-- Disabled duplicate get_user_profile
+-- CREATE OR REPLACE FUNCTION public.get_user_profile()
+-- RETURNS TABLE(
+--   id UUID,
+--   user_id UUID,
+--   user_type user_type,
+--   full_name TEXT,
+--   phone TEXT,
+--   dealer_id UUID,
+--   status TEXT,
+--   avatar_url TEXT
+-- )
+-- LANGUAGE sql
+-- STABLE SECURITY DEFINER
+-- SET search_path = 'public'
+-- AS $function$
+--   SELECT 
+--     p.id,
+--     p.user_id,
+--     p.user_type,
+--     p.full_name,
+--     p.phone,
+--     p.dealer_id,
+--     p.status,
+--     p.avatar_url
+--   FROM public.profiles p
+--   WHERE p.user_id = auth.uid();
+-- $function$;
 
 -- Pay rate calculation function
 CREATE OR REPLACE FUNCTION public.pay_rate_for_distance(distance_miles NUMERIC)
@@ -206,7 +207,7 @@ AS $function$
     WHEN distance_miles <= 35 THEN 7500
     ELSE 10000
   END;
-$function$;
+-- $function$;
 
 -- RLS Policies
 

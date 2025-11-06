@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredUserType?: "dealer" | "driver" | "swap_coordinator";
+  requiredUserType?: "dealer" | "driver" | "swap_coordinator" | "staff" | "admin";
 }
 
 export function ProtectedRoute({
@@ -101,11 +101,15 @@ export function ProtectedRoute({
 
     // Redirect to appropriate landing page for actual user type
     let redirectPath = "/";
-    if (userProfile?.user_type === "dealer") redirectPath = "/dealer/dashboard";
-    else if (userProfile?.user_type === "driver")
+    if (userProfile?.user_type === "dealer" || userProfile?.user_type === "staff") {
+      redirectPath = "/dealer/dashboard";
+    } else if (userProfile?.user_type === "driver") {
       redirectPath = "/driver/dashboard";
-    else if (userProfile?.user_type === "swap_coordinator")
+    } else if (userProfile?.user_type === "swap_coordinator") {
       redirectPath = "/swap-coordinator/dashboard";
+    } else if (userProfile?.user_type === "admin") {
+      redirectPath = "/dealer/admin";
+    }
     return <Navigate to={redirectPath} replace />;
   }
 

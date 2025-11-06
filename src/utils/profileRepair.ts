@@ -33,23 +33,16 @@ export const repairUserProfile = async () => {
       );
     }
 
-    // Use the secure database function to create profile
-    const { data, error } = await supabase.rpc(
-      "create_profile_for_current_user",
-      {
-        _user_type: userType,
-        _name: name,
-        _phone: phone,
-        _company_name: companyName,
-      },
-    );
-
-    if (error) {
-      throw error;
-    }
-
-    console.log("Profile created successfully:", data);
-    return data;
+    // Try preferred RPC, fallback to local bootstrap
+    const { createProfileForCurrentUser } = await import("@/utils/createProfileForCurrentUser");
+    const result = await createProfileForCurrentUser({
+      userType,
+      name: name ?? null,
+      phone: phone ?? null,
+      companyName: companyName ?? null,
+    });
+    console.log("Profile created successfully:", result);
+    return result;
   } catch (error) {
     console.error("Profile repair failed:", error);
     throw error;

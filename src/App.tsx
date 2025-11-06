@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 
 import DriverPersonalProfile from "./pages/DriverPersonalProfile";
-import DriverDashboard from "./pages/DriverDashboard";
+import DriverDashboard from "./pages/DriverDashboard.jsx";
 import Track from "./pages/Track";
 import History from "./pages/History";
 import DealerAuth from "./pages/DealerAuth";
@@ -36,6 +36,7 @@ import PasswordResetRequest from "./pages/PasswordResetRequest";
 import PasswordUpdate from "./pages/PasswordUpdate";
 import DealerPortal from "./pages/DealerPortal";
 import SalesDashboard from "./pages/SalesDashboard";
+import EmployeesPage from "./pages/dealer/employees";
 
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -119,6 +120,14 @@ const App = () => (
                   element={
                     <ProtectedRoute requiredUserType="dealer">
                       <DealerSettings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dealer/employees"
+                  element={
+                    <ProtectedRoute requiredUserType="dealer">
+                      <EmployeesPage />
                     </ProtectedRoute>
                   }
                 />

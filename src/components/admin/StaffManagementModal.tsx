@@ -111,38 +111,60 @@ export function StaffManagementModal() {
 
     setIsCreating(true);
     try {
-      // Normalize email to lowercase before sending
       const normalizedEmail = formData.email.trim().toLowerCase();
 
-      // Call Supabase edge function to create user and staff record
-      const { data, error } = await supabase.functions.invoke(
-        "create-staff-member",
-        {
-          body: {
-            firstName: formData.firstName.trim(),
-            lastName: formData.lastName.trim(),
-            email: normalizedEmail,
-            phone: formData.phone.trim(),
-            role: formData.role,
-            password: "SwapRunn",
-          },
-        },
-      );
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (error) {
-        console.error("Failed to create staff member:", error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create staff member",
-          variant: "destructive",
-        });
-        return;
+      if (userError) {
+        throw userError;
       }
 
-      if (data?.success) {
+      if (!user) {
+        throw new Error("Session missing. Login required.");
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error("Session token missing. Please sign in again.");
+      }
+
+      const response = await fetch("/api/addStaff", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: normalizedEmail,
+          phone: formData.phone.trim(),
+          role: formData.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || "Failed to create staff member");
+      }
+
+      if (result?.success) {
         // Show detailed success message based on what happened
-        let successMessage = data.message;
-        if (data.createdUser) {
+        let successMessage = result.message;
+        if (result.createdUser) {
           successMessage += " (New account created)";
         } else {
           successMessage += " (Existing account linked)";
@@ -168,7 +190,7 @@ export function StaffManagementModal() {
       } else {
         toast({
           title: "Error",
-          description: data?.error || "Failed to create staff member",
+          description: result?.error || "Failed to create staff member",
           variant: "destructive",
         });
       }

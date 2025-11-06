@@ -10,6 +10,7 @@ import mapBackgroundImage from "@/assets/map-background.jpg";
 import BackButton from "@/components/BackButton";
 import { cleanPhoneNumber } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
+import { createProfileForCurrentUser } from "@/utils/createProfileForCurrentUser";
 
 type SwapCoordinatorMetadata = {
   user_type?: string;
@@ -55,14 +56,11 @@ export default function SwapCoordinatorAuth() {
     const sanitizedPhone = resolvedPhone ? cleanPhoneNumber(resolvedPhone) : "";
 
     try {
-      const { error } = await supabase.rpc("create_profile_for_current_user", {
-        _user_type: "swap_coordinator",
-        _name: hasFullName ? resolvedFullName : null,
-        _phone: sanitizedPhone || null,
-        _company_name: null,
+      await createProfileForCurrentUser({
+        userType: "swap_coordinator",
+        name: hasFullName ? resolvedFullName : null,
+        phone: sanitizedPhone || null,
       });
-
-      if (error) throw error;
     } catch (profileError) {
       console.error("Swap coordinator profile creation failed:", profileError);
       throw profileError;
