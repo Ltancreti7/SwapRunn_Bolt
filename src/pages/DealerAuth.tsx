@@ -14,6 +14,7 @@ import mapBackgroundImage from "@/assets/map-background.jpg";
 import BackButton from "@/components/BackButton";
 import type { User } from "@supabase/supabase-js";
 import { createProfileForCurrentUser } from "@/utils/createProfileForCurrentUser";
+import { ensureDealerProfile } from "@/utils/ensureDealerProfile";
 
 type DealerMetadata = {
   user_type?: string;
@@ -321,13 +322,15 @@ const DealerAuth = () => {
 
         if (authError) throw authError;
 
-        // Check if user has dealer profile
-        const { data: profile } = await supabase
-          .rpc("get_user_profile")
-          .maybeSingle();
-
-        if (!profile) {
-          // Try to repair profile
+        // Ensure we treat this session as dealer and fix profile if needed
+        try {
+          // Update metadata to dealer and ensure profiles row reflects dealer
+          await ensureDealerProfile({
+            companyName,
+            fullName: `${firstName} ${lastName}`.trim() || null,
+          });
+        } catch (e) {
+          // Fallback: try the legacy repair path
           await tryRepairDealerProfile(authData.user);
         }
 

@@ -26,8 +26,7 @@ const BackButton = () => {
     if (
       currentPath.includes("/auth") ||
       currentPath.includes("/dealer/auth") ||
-      currentPath.includes("/driver/auth") ||
-      currentPath.includes("/swap-coordinator/auth")
+      currentPath.includes("/driver/auth")
     ) {
       navigate("/");
       return;

@@ -3,12 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { PlasmicRootProvider } from "@plasmicapp/loader-react";
+import { PLASMIC } from "./plasmic-init";
 import Index from "./pages/Index";
+import Homepage from "./pages/Homepage";
+import PlasmicCatchAll from "./pages/PlasmicCatchAll";
 
-import DriverPersonalProfile from "./pages/DriverPersonalProfile";
-import DriverDashboard from "./pages/DriverDashboard.jsx";
+import DriverDashboard from "./pages/DriverDashboard";
 import Track from "./pages/Track";
-import History from "./pages/History";
 import DealerAuth from "./pages/DealerAuth";
 import DealerDashboard from "./pages/DealerDashboard";
 import DealerAdminDashboard from "./pages/DealerAdminDashboard";
@@ -22,20 +24,12 @@ import DriverAuth from "./pages/DriverAuth";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
-import Drivers from "./pages/Drivers";
-import WhyUs from "./pages/WhyUs";
 import HowItWorks from "./pages/HowItWorks";
-import AboutSwapRunn from "./pages/AboutSwapRunn";
-import LearnMore from "./pages/LearnMore";
 import DealershipRegistration from "./pages/DealershipRegistration";
 import BillingSettings from "./pages/BillingSettings";
-import SwapCoordinatorAuth from "./pages/SwapCoordinatorAuth";
-import SwapCoordinatorDashboard from "./pages/SwapCoordinatorDashboard";
 import Login from "./pages/Login";
 import PasswordResetRequest from "./pages/PasswordResetRequest";
 import PasswordUpdate from "./pages/PasswordUpdate";
-import DealerPortal from "./pages/DealerPortal";
-import SalesDashboard from "./pages/SalesDashboard";
 import EmployeesPage from "./pages/dealer/employees";
 
 import NotFound from "./pages/NotFound";
@@ -43,26 +37,24 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MobileApp } from "@/components/MobileApp";
 import { Header } from "@/components/Header";
-import { ElasticScrollContainer } from "@/components/ui/elastic-scroll-container";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <MobileApp>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Header />
-            <div className="min-h-screen">
-              <Routes>
+  <PlasmicRootProvider loader={PLASMIC}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <MobileApp>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Header />
+              <div className="min-h-screen">
+                <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/plasmic-home" element={<Homepage />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/about" element={<AboutSwapRunn />} />
-                <Route path="/learn-more" element={<LearnMore />} />
-                <Route path="/why-us" element={<WhyUs />} />
                 <Route path="/login" element={<Login />} />
                 <Route
                   path="/dealers/registration"
@@ -132,22 +124,6 @@ const App = () => (
                   }
                 />
                 <Route
-                  path="/dealer/portal"
-                  element={
-                    <ProtectedRoute requiredUserType="dealer">
-                      <DealerPortal />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/sales/dashboard"
-                  element={
-                    <ProtectedRoute requiredUserType="dealer">
-                      <SalesDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
                   path="/accept-invitation/:token"
                   element={<AcceptInvitation />}
                 />
@@ -176,14 +152,6 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                <Route
-                  path="/driver/profile"
-                  element={
-                    <ProtectedRoute requiredUserType="driver">
-                      <DriverPersonalProfile />
-                    </ProtectedRoute>
-                  }
-                />
                 {/* Legacy driver job routes - redirect to requests */}
                 <Route
                   path="/driver/job/:jobId"
@@ -197,19 +165,8 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/drivers" element={<Drivers />} />
-                <Route
-                  path="/swap-coordinator/auth"
-                  element={<SwapCoordinatorAuth />}
-                />
-                <Route
-                  path="/swap-coordinator/dashboard"
-                  element={
-                    <ProtectedRoute requiredUserType="swap_coordinator">
-                      <SwapCoordinatorDashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                {/* Plasmic pages - add /plasmic/* routes here */}
+                <Route path="/plasmic/*" element={<PlasmicCatchAll />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -219,6 +176,7 @@ const App = () => (
       </MobileApp>
     </AuthProvider>
   </QueryClientProvider>
+  </PlasmicRootProvider>
 );
 
 export default App;

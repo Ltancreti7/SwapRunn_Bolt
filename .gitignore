@@ -30,3 +30,9 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+*storybook.log
+storybook-static
+
+# Debug scripts (may contain sensitive data)
+debug-scripts/

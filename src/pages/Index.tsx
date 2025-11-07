@@ -110,7 +110,7 @@ const Index = () => {
                 <div className="aspect-square bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-2xl border border-neutral-800 flex items-center justify-center overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#E11900]/10 to-transparent"></div>
                   <div className="relative z-10 text-center p-8">
-                    <Truck className="w-24 h-24 text-[#E11900] mx-auto mb-6" />
+                    <Truck className="w-24 h-24 text-[#E11900] mx-auto mb-6" aria-hidden="true" />
                     <p className="text-2xl font-bold text-white mb-2">
                       Dealer Dashboard Preview
                     </p>
@@ -192,26 +192,26 @@ const Index = () => {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
                 <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <Shield className="w-8 h-8 text-[#E11900]" />
+                  <Shield className="w-8 h-8 text-[#E11900]" aria-hidden="true" />
                   For Dealerships
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">Centralized dashboard</p>
                       <p className="text-neutral-400 text-sm">Manage all deliveries from one place</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">Verified, insured drivers</p>
                       <p className="text-neutral-400 text-sm">Every driver is vetted and covered</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">Real-time updates</p>
                       <p className="text-neutral-400 text-sm">Know exactly where every vehicle is</p>
@@ -222,26 +222,26 @@ const Index = () => {
 
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8">
                 <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <Truck className="w-8 h-8 text-[#E11900]" />
+                  <Truck className="w-8 h-8 text-[#E11900]" aria-hidden="true" />
                   For Drivers
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">Instant job access</p>
                       <p className="text-neutral-400 text-sm">Accept jobs directly from your phone</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">GPS tracking + earnings</p>
                       <p className="text-neutral-400 text-sm">Navigate and track your pay in real time</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[#E11900] mt-1 flex-shrink-0" aria-hidden="true" />
                     <div>
                       <p className="text-white font-semibold">Easy payouts</p>
                       <p className="text-neutral-400 text-sm">Get paid quickly via Stripe</p>
@@ -298,19 +298,19 @@ const Index = () => {
 
               <div className="space-y-4 mb-10">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" />
+                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" aria-hidden="true" />
                   <span className="text-lg text-neutral-300">Unlimited jobs</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" />
+                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" aria-hidden="true" />
                   <span className="text-lg text-neutral-300">Unlimited drivers</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" />
+                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" aria-hidden="true" />
                   <span className="text-lg text-neutral-300">Real-time tracking</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" />
+                  <CheckCircle2 className="w-6 h-6 text-[#E11900] flex-shrink-0" aria-hidden="true" />
                   <span className="text-lg text-neutral-300">Dedicated support</span>
                 </div>
               </div>

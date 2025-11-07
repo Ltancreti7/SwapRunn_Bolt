@@ -26,7 +26,6 @@ export function AppHeader() {
       "/drivers",
       "/how-it-works",
       "/dealership/register",
-      "/swap-coordinator/dashboard",
     ].includes(location.pathname);
 
   // Top-level routes where back button should be hidden (show hamburger menu instead)

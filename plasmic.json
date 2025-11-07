@@ -1,0 +1,85 @@
+{
+  "platform": "react",
+  "code": {
+    "lang": "ts",
+    "scheme": "blackbox",
+    "reactRuntime": "classic"
+  },
+  "style": {
+    "scheme": "css-modules",
+    "defaultStyleCssFilePath": "src/plasmic/plasmic__default_style.module.css"
+  },
+  "images": {
+    "scheme": "public-files",
+    "publicDir": "../public",
+    "publicUrlPrefix": "/"
+  },
+  "tokens": {
+    "scheme": "theo",
+    "tokensFilePath": "plasmic-tokens.theo.json"
+  },
+  "srcDir": "src",
+  "defaultPlasmicDir": "./src/plasmic",
+  "projects": [
+    {
+      "projectId": "jMBUBJxKv692NrSbkE8x4A",
+      "projectName": "Blank website",
+      "projectApiToken": "FvoB4l55iGvVKwSVmcv8w2dnhiGT9CESWcnTp8xhAD8IaJLA3zhwP2pYLPwU9r95V0fHd7nxhbkU3uOvguow",
+      "version": "latest",
+      "cssFilePath": "src/plasmic/plasmic.module.css",
+      "components": [
+        {
+          "id": "VdmWNXtAHVCM",
+          "name": "Homepage",
+          "type": "managed",
+          "projectId": "jMBUBJxKv692NrSbkE8x4A",
+          "renderModuleFilePath": "src/plasmic/blank_website/PlasmicHomepage.tsx",
+          "importSpec": {
+            "modulePath": "../pages/Homepage.tsx"
+          },
+          "cssFilePath": "src/plasmic/blank_website/PlasmicHomepage.module.css",
+          "scheme": "blackbox",
+          "componentType": "page",
+          "path": "/"
+        }
+      ],
+      "icons": [],
+      "images": [],
+      "indirect": false,
+      "globalContextsFilePath": "",
+      "splitsProviderFilePath": "",
+      "jsbundel": [],
+      "projectModuleFilePath": "src/plasmic/plasmic-root.tsx",
+      "styleTokensProviderFilePath": "src/plasmic/blank_website/PlasmicStyleTokensProvider.tsx",
+      "codeComponents": [
+        {
+          "id": "tlnAjvwTQUmn",
+          "name": "PlasmicHead",
+          "displayName": "hostless-plasmic-head",
+          "componentImportPath": "@plasmicapp/react-web"
+        },
+        {
+          "id": "uTyubB1IumuN",
+          "name": "Fetcher",
+          "displayName": "plasmic-data-source-fetcher",
+          "componentImportPath": "@plasmicapp/react-web/lib/data-sources"
+        }
+      ],
+      "customFunctions": []
+    }
+  ],
+  "globalVariants": {
+    "variantGroups": [
+      {
+        "id": "B0aDEcSbvaqs",
+        "name": "Screen",
+        "projectId": "jMBUBJxKv692NrSbkE8x4A",
+        "contextFilePath": "src/plasmic/blank_website/PlasmicGlobalVariant__Screen.tsx"
+      }
+    ]
+  },
+  "wrapPagesWithGlobalContexts": true,
+  "preserveJsImportExtensions": false,
+  "cliVersion": "0.1.348",
+  "$schema": "https://unpkg.com/@plasmicapp/cli@0.1.348/dist/plasmic.schema.json"
+}

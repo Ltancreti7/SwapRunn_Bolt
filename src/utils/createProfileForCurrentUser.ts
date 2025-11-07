@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type SupportedUserType = "dealer" | "driver" | "staff" | "admin" | "swap_coordinator";
+export type SupportedUserType = "dealer" | "driver" | "staff" | "admin";
 
 export interface CreateProfileParams {
   userType: SupportedUserType;

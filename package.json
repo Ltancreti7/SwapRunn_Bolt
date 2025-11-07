@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006 --ci --no-open",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@capacitor-mlkit/barcode-scanning": "^7.3.0",
@@ -26,6 +28,9 @@
     "@capgo/capacitor-native-biometric": "^7.1.13",
     "@googlemaps/js-api-loader": "^1.16.10",
     "@hookform/resolvers": "^3.10.0",
+    "@plasmicapp/loader-nextjs": "^1.0.443",
+    "@plasmicapp/loader-react": "^1.0.402",
+    "@plasmicapp/react-web": "^0.2.406",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -83,24 +88,37 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.2",
     "@eslint/js": "^9.32.0",
+    "@plasmicapp/cli": "^0.1.348",
+    "@storybook/addon-a11y": "^10.0.5",
+    "@storybook/addon-docs": "^10.0.5",
+    "@storybook/addon-onboarding": "^10.0.5",
+    "@storybook/addon-vitest": "^10.0.5",
+    "@storybook/react-vite": "^10.0.5",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
+    "@vitest/browser-playwright": "^4.0.7",
+    "@vitest/coverage-v8": "^4.0.7",
     "autoprefixer": "^10.4.21",
     "cypress": "^15.4.0",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-storybook": "^10.0.5",
     "globals": "^15.15.0",
     "lovable-tagger": "^1.1.9",
+    "playwright": "^1.56.1",
     "postcss": "^8.5.6",
+    "storybook": "^10.0.5",
     "supabase": "^2.54.11",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "vitest": "^4.0.7"
   }
 }

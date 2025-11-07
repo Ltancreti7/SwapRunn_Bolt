@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredUserType?: "dealer" | "driver" | "swap_coordinator" | "staff" | "admin";
+  requiredUserType?: "dealer" | "driver" | "staff" | "admin";
 }
 
 export function ProtectedRoute({
@@ -105,8 +105,6 @@ export function ProtectedRoute({
       redirectPath = "/dealer/dashboard";
     } else if (userProfile?.user_type === "driver") {
       redirectPath = "/driver/dashboard";
-    } else if (userProfile?.user_type === "swap_coordinator") {
-      redirectPath = "/swap-coordinator/dashboard";
     } else if (userProfile?.user_type === "admin") {
       redirectPath = "/dealer/admin";
     }
