@@ -1,12 +1,5 @@
 // Mock auth service that simulates Supabase auth for local development
-import { initializeLocalDb, localDbHelpers } from './localDb';
-
-// Initialize the database when this module loads
-try {
-  initializeLocalDb();
-} catch (error) {
-  console.error('Failed to initialize local database:', error);
-}
+// Local mock now uses in-memory + localStorage only (removed better-sqlite3 dependency)
 
 interface MockUser {
   id: string;
@@ -22,9 +15,33 @@ interface MockSession {
   user: MockUser;
 }
 
-// Simple in-memory store for sessions
+// Simple in-memory store for sessions & users persisted to localStorage
 const sessions = new Map<string, MockSession>();
 const users = new Map<string, MockUser>();
+const profiles = new Map<string, { user_id: string; user_type: string; dealer_id?: string | null; full_name?: string | null; phone?: string | null; email?: string | null }>();
+const dealers = new Map<string, { id: string; user_id?: string | null; name?: string | null; email?: string | null; status?: string | null }>();
+
+function persist() {
+  try {
+    localStorage.setItem('mock-users', JSON.stringify(Array.from(users.entries())));
+    localStorage.setItem('mock-sessions', JSON.stringify(Array.from(sessions.entries())));
+    localStorage.setItem('mock-profiles', JSON.stringify(Array.from(profiles.entries())));
+    localStorage.setItem('mock-dealers', JSON.stringify(Array.from(dealers.entries())));
+  } catch {}
+}
+function restore() {
+  try {
+    const u = localStorage.getItem('mock-users');
+    const s = localStorage.getItem('mock-sessions');
+    const p = localStorage.getItem('mock-profiles');
+    const d = localStorage.getItem('mock-dealers');
+    if (u) new Map<string, MockUser>(JSON.parse(u)).forEach((v,k)=>users.set(k,v));
+    if (s) new Map<string, MockSession>(JSON.parse(s)).forEach((v,k)=>sessions.set(k,v));
+    if (p) new Map<string, any>(JSON.parse(p)).forEach((v,k)=>profiles.set(k,v));
+    if (d) new Map<string, any>(JSON.parse(d)).forEach((v,k)=>dealers.set(k,v));
+  } catch {}
+}
+restore();
 
 // Generate random IDs
 function generateId() {
@@ -62,25 +79,15 @@ export const mockAuth = {
     sessions.set(userId, session);
     localStorage.setItem('mock-session', JSON.stringify(session));
     
-    try {
-      // Create profile in local database
-      const result = localDbHelpers.createUser({
-        id: userId,
-        email: options.email,
-        user_type: options.options?.data?.user_type || 'driver',
-        full_name: options.options?.data?.full_name
-      });
-      
-      return { 
-        data: { user, session }, 
-        error: null 
-      };
-    } catch (error) {
-      return {
-        data: { user: null, session: null },
-        error: { message: 'Failed to create user profile: ' + (error as Error).message }
-      };
+    const user_type = options.options?.data?.user_type || 'driver';
+    let dealer_id: string | null = null;
+    if (user_type === 'dealer') {
+      dealer_id = 'dealer-' + generateId();
+      dealers.set(dealer_id, { id: dealer_id, user_id: userId, email: options.email, name: options.options?.data?.full_name || options.email, status: 'active' });
     }
+    profiles.set(userId, { user_id: userId, user_type, dealer_id, full_name: options.options?.data?.full_name || options.email, email: options.email });
+    persist();
+    return { data: { user, session }, error: null };
   },
 
   // Mock signIn
@@ -102,8 +109,9 @@ export const mockAuth = {
       user
     };
     
-    sessions.set(user.id, session);
-    localStorage.setItem('mock-session', JSON.stringify(session));
+  sessions.set(user.id, session);
+  localStorage.setItem('mock-session', JSON.stringify(session));
+  persist();
     
     return { data: { user, session }, error: null };
   },
@@ -135,7 +143,7 @@ export const mockAuth = {
       if (storedSession) {
         try {
           const session = JSON.parse(storedSession);
-          const profile = localDbHelpers.getUserProfile(session.user.id);
+          const profile = profiles.get(session.user.id) || null;
           return Promise.resolve({ data: profile, error: null });
         } catch (error) {
           return Promise.resolve({ data: null, error: { message: 'Session not found' } });
@@ -148,44 +156,57 @@ export const mockAuth = {
   }
 };
 
-// Mock database operations
+// Mock database operations with proper TypeScript interface
 export const mockDatabase = {
-  from: (table: string) => ({
-    select: (columns?: string) => ({
-      eq: (column: string, value: any) => ({
-        maybeSingle: () => {
-          try {
-            if (table === 'profiles') {
-              const profile = localDbHelpers.getUserProfile(value);
+  from: (table: string) => {
+    const createMockQuery = () => ({
+      select: (columns?: string) => createMockQuery(),
+      insert: (data: any) => createMockQuery(),
+      update: (data: any) => createMockQuery(),
+      eq: (column: string, value: any) => createMockQuery(),
+      maybeSingle: () => {
+        try {
+          if (table === 'profiles') {
+            // Try to get profile from localStorage session
+            const session = localStorage.getItem('mock-session');
+            if (session) {
+              const sessionData = JSON.parse(session);
+              const profile = profiles.get(sessionData.user.id) || null;
               return Promise.resolve({ data: profile, error: null });
             }
-            return Promise.resolve({ data: null, error: null });
-          } catch (error) {
-            return Promise.resolve({ data: null, error: { message: (error as Error).message } });
           }
-        }
-      })
-    }),
-    update: (data: any) => ({
-      eq: (column: string, value: any) => {
-        try {
-          if (table === 'dealers' || table === 'dealership_profiles') {
-            localDbHelpers.updateDealer(value, data);
-            return Promise.resolve({ data: null, error: null });
-          }
-          return Promise.resolve({ data: null, error: { message: `Table ${table} not implemented` } });
+          return Promise.resolve({ data: null, error: null });
         } catch (error) {
           return Promise.resolve({ data: null, error: { message: (error as Error).message } });
         }
+      },
+      single: () => createMockQuery().maybeSingle(),
+      // For update operations that need eq()
+      then: (resolve: any) => {
+        try {
+          console.log(`🔧 Local mode: Database operation on ${table}`);
+          resolve({ data: null, error: null });
+        } catch (error) {
+          resolve({ data: null, error: { message: (error as Error).message } });
+        }
       }
-    }),
-    insert: (data: any) => {
-      try {
-        console.log(`🔧 Local mode: Skipping insert into ${table}`, data);
+    });
+    
+    return createMockQuery();
+  }
+};
+
+// Helper to create a mock client of the same shape as supabase-js
+export function makeMockClient(): any {
+  return {
+    auth: mockAuth,
+    from: mockDatabase.from,
+    rpc: mockAuth.rpc,
+    functions: {
+      invoke: (funcName: string, options?: any) => {
+        console.log(`🔧 Local mode: Skipping edge function ${funcName}`, options);
         return Promise.resolve({ data: null, error: null });
-      } catch (error) {
-        return Promise.resolve({ data: null, error: { message: (error as Error).message } });
       }
     }
-  })
-};
+  } as any;
+}

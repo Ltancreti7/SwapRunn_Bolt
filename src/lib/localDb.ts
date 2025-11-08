@@ -1,54 +1,70 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+// Local storage-based database (no native dependencies)
+// This replaces SQLite for easier codespace compatibility
 
-// Create local SQLite database
-const dbPath = path.join(process.cwd(), 'local-dev.db');
-export const db = new Database(dbPath);
+interface Profile {
+  user_id: string;
+  user_type: string;
+  dealer_id?: string;
+  full_name?: string;
+  phone?: string;
+  email?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON');
+interface DealerProfile {
+  id: string;
+  user_id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  website?: string;
+  position?: string;
+  store?: string;
+  dealership_code?: string;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
-// Create tables
+// Simple localStorage-based storage
+const STORAGE_KEYS = {
+  profiles: 'local-dev-profiles',
+  dealers: 'local-dev-dealers'
+};
+
+function generateId(): string {
+  return 'local-' + Math.random().toString(36).substr(2, 16);
+}
+
+function saveToStorage<T>(key: string, data: T[]): void {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function loadFromStorage<T>(key: string): T[] {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Initialize storage
 export function initializeLocalDb() {
-  // Create profiles table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS profiles (
-      user_id TEXT PRIMARY KEY,
-      user_type TEXT NOT NULL CHECK (user_type IN ('dealer', 'driver', 'staff', 'admin', 'swap_coordinator')),
-      dealer_id TEXT,
-      full_name TEXT,
-      phone TEXT,
-      email TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Create dealership_profiles table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS dealership_profiles (
-      id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-      user_id TEXT,
-      name TEXT,
-      email TEXT,
-      phone TEXT,
-      address TEXT,
-      street TEXT,
-      city TEXT,
-      state TEXT,
-      zip TEXT,
-      website TEXT,
-      position TEXT,
-      store TEXT,
-      dealership_code TEXT UNIQUE,
-      status TEXT DEFAULT 'active',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES profiles(user_id) ON DELETE CASCADE
-    )
-  `);
-
-  console.log('✅ Local database initialized');
+  // Just ensure storage keys exist
+  if (!localStorage.getItem(STORAGE_KEYS.profiles)) {
+    saveToStorage(STORAGE_KEYS.profiles, []);
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.dealers)) {
+    saveToStorage(STORAGE_KEYS.dealers, []);
+  }
+  console.log('✅ Local storage database initialized');
 }
 
 // Helper functions
@@ -63,42 +79,52 @@ export const localDbHelpers = {
     
     // If dealer, create dealership record first
     if (userData.user_type === 'dealer') {
-      const insertDealer = db.prepare(`
-        INSERT INTO dealership_profiles (user_id, email, name)
-        VALUES (?, ?, ?)
-        RETURNING id
-      `);
-      const dealerResult = insertDealer.get(userData.id, userData.email, userData.full_name || userData.email);
-      dealerId = (dealerResult as any)?.id;
+      dealerId = generateId();
+      const dealers = loadFromStorage<DealerProfile>(STORAGE_KEYS.dealers);
+      const newDealer: DealerProfile = {
+        id: dealerId,
+        user_id: userData.id,
+        email: userData.email,
+        name: userData.full_name || userData.email,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      dealers.push(newDealer);
+      saveToStorage(STORAGE_KEYS.dealers, dealers);
     }
     
     // Create profile
-    const insertProfile = db.prepare(`
-      INSERT INTO profiles (user_id, user_type, dealer_id, full_name, email)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    insertProfile.run(userData.id, userData.user_type, dealerId, userData.full_name, userData.email);
+    const profiles = loadFromStorage<Profile>(STORAGE_KEYS.profiles);
+    const newProfile: Profile = {
+      user_id: userData.id,
+      user_type: userData.user_type,
+      dealer_id: dealerId,
+      full_name: userData.full_name,
+      email: userData.email,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    profiles.push(newProfile);
+    saveToStorage(STORAGE_KEYS.profiles, profiles);
     
     return { user: { id: userData.id, email: userData.email }, dealerId };
   },
 
-  getUserProfile: (userId: string) => {
-    const stmt = db.prepare(`
-      SELECT user_id, user_type, dealer_id, full_name, phone, email
-      FROM profiles
-      WHERE user_id = ?
-    `);
-    return stmt.get(userId);
+  getUserProfile: (userId: string): Profile | null => {
+    const profiles = loadFromStorage<Profile>(STORAGE_KEYS.profiles);
+    return profiles.find(p => p.user_id === userId) || null;
   },
 
-  updateDealer: (dealerId: string, data: any) => {
-    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
-    const values = Object.values(data);
-    const stmt = db.prepare(`
-      UPDATE dealership_profiles 
-      SET ${fields}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    stmt.run(...values, dealerId);
+  updateDealer: (dealerId: string, data: Partial<DealerProfile>): void => {
+    const dealers = loadFromStorage<DealerProfile>(STORAGE_KEYS.dealers);
+    const index = dealers.findIndex(d => d.id === dealerId);
+    if (index !== -1) {
+      dealers[index] = { 
+        ...dealers[index], 
+        ...data, 
+        updated_at: new Date().toISOString() 
+      };
+      saveToStorage(STORAGE_KEYS.dealers, dealers);
+    }
   }
 };
