@@ -49,7 +49,7 @@ export function ProtectedRoute({
             </div>
             <div className="flex flex-col gap-3">
               <Button
-                onClick={() => (window.location.href = "/dealer/auth")}
+                onClick={() => (window.location.href = "/dealer/signin")}
                 className="flex-1"
               >
                 I'm a Dealer

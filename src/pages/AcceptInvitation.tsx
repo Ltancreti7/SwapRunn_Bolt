@@ -122,7 +122,7 @@ function AcceptInvitation() {
 
   const handleSwitchAccount = async () => {
     await signOut();
-    navigate("/dealer/auth");
+    navigate("/dealer/signin");
   };
 
   const handleAcceptInvitation = async () => {
@@ -369,7 +369,7 @@ function AcceptInvitation() {
 
                 {!isLoggedIn && (
                   <button
-                    onClick={() => navigate("/dealer/auth")}
+                    onClick={() => navigate("/dealer/signin")}
                     className="w-full bg-[#DC2626] text-white py-3 rounded-full font-semibold transition hover:bg-[#b91c1c] active:scale-95 shadow-lg"
                   >
                     Sign In to Accept

@@ -25,7 +25,7 @@ const BackButton = () => {
     // Auth pages should go back to home
     if (
       currentPath.includes("/auth") ||
-      currentPath.includes("/dealer/auth") ||
+      currentPath.includes("/dealer/signin") ||
       currentPath.includes("/driver/auth")
     ) {
       navigate("/");
@@ -45,7 +45,7 @@ const BackButton = () => {
     if (currentPath.includes("/auth/reset")) {
       const referrer = document.referrer;
       if (referrer.includes("dealer")) {
-        navigate("/dealer/auth");
+        navigate("/dealer/signin");
       } else if (referrer.includes("driver")) {
         navigate("/driver/auth");
       } else {

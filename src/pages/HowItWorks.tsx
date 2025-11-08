@@ -521,7 +521,7 @@ const HowItWorks = () => {
                 reliable vehicle delivery services.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/dealer/auth">
+                <Link to="/dealer/signin">
                   <Button className="bg-[#E11900] hover:bg-[#E11900]/90 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all duration-300">
                     Get Started as Dealer
                   </Button>

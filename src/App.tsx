@@ -11,7 +11,7 @@ import PlasmicCatchAll from "./pages/PlasmicCatchAll";
 
 import DriverDashboard from "./pages/DriverDashboard";
 import Track from "./pages/Track";
-import DealerAuth from "./pages/DealerAuth";
+import DealerSignin from "./pages/DealerSignin";
 import DealerDashboard from "./pages/DealerDashboard";
 import DealerAdminDashboard from "./pages/DealerAdminDashboard";
 // Removed old DealerRequest - using unified CreateJob instead
@@ -65,7 +65,9 @@ const App = () => (
                   element={<DealershipRegistration />}
                 />
                 <Route path="/billing" element={<BillingSettings />} />
-                <Route path="/dealer/auth" element={<DealerAuth />} />
+                <Route path="/dealer/signin" element={<DealerSignin />} />
+                {/* Legacy route redirect */}
+                <Route path="/dealer/auth" element={<Navigate to="/dealer/signin" replace />} />
                 <Route
                   path="/dealer/dashboard"
                   element={

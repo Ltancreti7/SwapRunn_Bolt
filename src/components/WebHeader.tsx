@@ -34,7 +34,7 @@ const WebHeader = () => {
             </>
           ) : (
             <>
-              <Link to="/dealer/auth">
+              <Link to="/dealer/signin">
                 <Button variant="ghost">Dealer Login</Button>
               </Link>
               <Link to="/driver/auth">

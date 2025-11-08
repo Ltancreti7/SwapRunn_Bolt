@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle, Building2, Copy, Mail } from "lucide-react";
+import { Building2, Mail } from "lucide-react";
 import { formatPhoneNumber, cleanPhoneNumber } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import { generateDealershipCode } from "@/lib/dealershipCode";
@@ -24,9 +24,7 @@ import BackButton from "@/components/BackButton";
 const DealershipRegistration = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [planType, setPlanType] = useState<"monthly" | "annual">("monthly");
-  const [dealershipCode, setDealershipCode] = useState("");
   const [checkingSession, setCheckingSession] = useState(true);
   const [pendingEmailConfirmation, setPendingEmailConfirmation] =
     useState(false);
@@ -222,10 +220,11 @@ const DealershipRegistration = () => {
       }
 
       // Generate unique dealership code
-      const uniqueCode = generateDealershipCode(formData.dealershipName);
-      setDealershipCode(uniqueCode);
+  const uniqueCode = generateDealershipCode(formData.dealershipName);
 
       // Step 3: Update dealer record with complete information
+      const fullAddress = `${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}`.trim();
+      
       const { error: dealerError } = await supabase
         .from("dealers")
         .update({
@@ -234,12 +233,14 @@ const DealershipRegistration = () => {
           city: formData.city,
           state: formData.state,
           zip: formData.zip,
+          address: fullAddress,
           phone: cleanPhoneNumber(formData.dealershipPhone),
           website: formData.website,
           email: formData.email,
           position: formData.jobTitle,
           store: formData.dealershipName,
           dealership_code: uniqueCode,
+          status: 'active',
         })
         .eq("id", dealerId);
 
@@ -250,21 +251,30 @@ const DealershipRegistration = () => {
       }
 
       // Step 4: Create subscription (test mode)
-      const { data: billingData, error: billingError } =
-        await supabase.functions.invoke("stripe-billing", {
-          body: {
-            dealerId,
-            testMode: true,
-            addOns: {
-              gps_tracking: false,
-              signature_capture: false,
-            },
-          },
-        });
+      const billingEnabled =
+        import.meta.env.VITE_ENABLE_STRIPE_BILLING === "true";
 
-      if (billingError) {
-        console.error("Billing setup error:", billingError);
-        // Don't fail registration if billing fails in test mode
+      if (billingEnabled) {
+        const { data: billingData, error: billingError } =
+          await supabase.functions.invoke("stripe-billing", {
+            body: {
+              dealerId,
+              testMode: true,
+              addOns: {
+                gps_tracking: false,
+                signature_capture: false,
+              },
+            },
+          });
+
+        if (billingError) {
+          console.error("Billing setup error:", billingError);
+          // Don't fail registration if billing fails in test mode
+        }
+      } else {
+        console.info(
+          "Skipping stripe-billing invocation in this environment (set VITE_ENABLE_STRIPE_BILLING=true to enable)",
+        );
       }
 
       // Step 5: Assign user as owner in dealership_staff
@@ -286,7 +296,12 @@ const DealershipRegistration = () => {
       // Log successful submission
       await logSubmission("success");
 
-      setShowSuccess(true);
+      toast({
+        title: "Dealership created",
+        description: "Redirecting you to the admin dashboard...",
+      });
+
+      navigate("/dealer/admin", { replace: true });
     } catch (error: unknown) {
       console.error("Registration error:", error);
 
@@ -302,7 +317,7 @@ const DealershipRegistration = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/dealer/auth")}
+              onClick={() => navigate("/dealer/signin")}
               className="ml-2"
             >
               Go to Login
@@ -332,117 +347,6 @@ const DealershipRegistration = () => {
     );
   }
 
-  if (showSuccess) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <Card className="w-full max-w-md bg-[#1A1A1A] border-white/10 text-white">
-          <CardContent className="pt-12 pb-8 text-center space-y-6">
-            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-12 h-12 text-green-500" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold">Welcome to SwapRunn!</h2>
-              <p className="text-white/70">
-                Your dealership account has been created successfully.
-              </p>
-            </div>
-
-            <div className="bg-black/50 border border-white/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/60">Account Status</span>
-                <span className="text-green-500 font-semibold">✓ Active</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/60">Your Role</span>
-                <span className="text-white font-semibold">Owner</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/60">Subscription Plan</span>
-                <span className="text-white font-semibold">
-                  Hybrid (Test Mode)
-                </span>
-              </div>
-              <div className="text-xs text-white/50 pt-2 border-t border-white/10">
-                $99/month + $1.50 per swap
-              </div>
-            </div>
-
-            <div className="bg-[#E11900]/10 border border-[#E11900]/20 rounded-2xl p-4 space-y-2">
-              <p className="text-white/80 text-sm font-semibold">
-                Staff Signup Code
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-2xl font-mono font-bold text-white tracking-wider">
-                  {dealershipCode}
-                </code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/10"
-                  onClick={() => {
-                    navigator.clipboard.writeText(dealershipCode);
-                    toast({
-                      title: "Copied!",
-                      description: "Dealership code copied to clipboard",
-                    });
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-white/60 text-xs">
-                Share this code with your staff so they can create accounts
-              </p>
-            </div>
-
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-blue-400 font-bold text-sm">1</span>
-                </div>
-                <h3 className="text-white font-semibold text-sm">Your Account is Ready!</h3>
-              </div>
-              <p className="text-white/80 text-sm">
-                You're automatically logged in and can access your admin dashboard right now.
-              </p>
-
-              <div className="flex items-center gap-2 mt-3">
-                <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-blue-400 font-bold text-sm">2</span>
-                </div>
-                <h3 className="text-white font-semibold text-sm">Next Time You Visit</h3>
-              </div>
-              <p className="text-white/80 text-sm">
-                Use the same email (<strong className="text-white">{formData.email}</strong>) and password you just created to sign in at the dealer login page.
-              </p>
-
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mt-3">
-                <p className="text-yellow-200 text-xs font-medium">
-                  💡 Bookmark this: Use <strong>/dealer/auth</strong> to sign in next time
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                className="w-full bg-[#E11900] hover:bg-[#E11900]/90 h-12 rounded-2xl font-semibold"
-                onClick={() => navigate("/dealer/admin")}
-              >
-                Go to Admin Dashboard
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-2xl border-white/20 text-white hover:bg-white/10"
-                onClick={() => navigate("/dealer/auth")}
-              >
-                View Login Page
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (pendingEmailConfirmation) {
     return (
@@ -460,7 +364,7 @@ const DealershipRegistration = () => {
             </p>
             <Button
               variant="secondary"
-              onClick={() => navigate("/dealer/auth")}
+              onClick={() => navigate("/dealer/signin")}
               className="w-full"
             >
               Go to dealer login
@@ -859,7 +763,7 @@ const DealershipRegistration = () => {
               Already have an account?{" "}
               <button
                 type="button"
-                onClick={() => navigate("/dealer/auth")}
+                onClick={() => navigate("/dealer/signin")}
                 className="text-[#E11900] hover:text-[#E11900]/80 underline font-medium"
               >
                 Sign in here

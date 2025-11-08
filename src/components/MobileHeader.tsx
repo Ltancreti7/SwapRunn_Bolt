@@ -15,7 +15,7 @@ const MobileHeader = () => {
 
       {/* Middle: buttons */}
       <main className="flex flex-col gap-4 w-full max-w-xs">
-        <Link to="/dealer/auth" className="w-full">
+        <Link to="/dealer/signin" className="w-full">
           <Button className="w-full h-14 text-lg" size="lg">
             Dealer
           </Button>

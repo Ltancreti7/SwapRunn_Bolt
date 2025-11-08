@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +19,7 @@ import {
   Star,
   MapPin,
   Building2,
+  Loader2,
 } from "lucide-react";
 import {
   Dialog,
@@ -45,7 +46,12 @@ const DealerAdminDashboard = () => {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [staffCount, setStaffCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [missingDealerProfile, setMissingDealerProfile] = useState(false);
+  const [effectiveDealerId, setEffectiveDealerId] = useState<string | null>(
+    null,
+  );
+  const [profileStatus, setProfileStatus] = useState<
+    "checking" | "ready" | "missing"
+  >("checking");
   const [showAddDriver, setShowAddDriver] = useState(false);
   const [showStaffManagement, setShowStaffManagement] = useState(false);
   const [showDriversDetail, setShowDriversDetail] = useState(false);
@@ -55,26 +61,18 @@ const DealerAdminDashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (userProfile?.user_type === "dealer") {
-      fetchAdminData();
-    }
-  }, [userProfile]);
-
-  const fetchAdminData = async () => {
-    if (!userProfile?.dealer_id) {
-      setMissingDealerProfile(true);
+  const fetchAdminData = useCallback(async () => {
+    if (!effectiveDealerId) {
       setLoading(false);
       return;
     }
-    setMissingDealerProfile(false);
 
     try {
       // Fetch jobs
       const { data: jobsData, error: jobsError } = await supabase
         .from("jobs")
         .select("*")
-        .eq("dealer_id", userProfile.dealer_id)
+        .eq("dealer_id", effectiveDealerId)
         .order("created_at", { ascending: false });
 
       if (jobsError) throw jobsError;
@@ -94,7 +92,7 @@ const DealerAdminDashboard = () => {
       const { count: staffCountData, error: staffError } = await supabase
         .from("dealership_staff")
         .select("*", { count: "exact", head: true })
-        .eq("dealer_id", userProfile.dealer_id)
+        .eq("dealer_id", effectiveDealerId)
         .eq("is_active", true);
 
       if (staffError) throw staffError;
@@ -104,12 +102,90 @@ const DealerAdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [effectiveDealerId]);
+
+  useEffect(() => {
+    if (userProfile?.user_type === "dealer" && effectiveDealerId) {
+      fetchAdminData();
+    }
+  }, [userProfile, fetchAdminData, effectiveDealerId]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
+
+  useEffect(() => {
+    if (userProfile?.user_type !== "dealer") {
+      setEffectiveDealerId(null);
+      setProfileStatus("checking");
+      return;
+    }
+
+    const derivedId =
+      userProfile?.dealer_id || userProfile?.dealers?.id || null;
+
+    if (derivedId) {
+      setEffectiveDealerId(derivedId);
+      setProfileStatus("ready");
+      return;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+
+    const scheduleRetry = (delay: number) => {
+      if (cancelled) return;
+      setTimeout(() => {
+        if (!cancelled) {
+          attemptFetch();
+        }
+      }, delay);
+    };
+
+    const attemptFetch = async () => {
+      if (cancelled) return;
+      setProfileStatus("checking");
+
+      try {
+        const { data, error } = await supabase
+          .rpc("get_user_profile")
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error) {
+          throw error;
+        }
+
+        if (data?.dealer_id) {
+          cancelled = true;
+          setEffectiveDealerId(data.dealer_id);
+          setProfileStatus("ready");
+        } else if (attempts < 4) {
+          attempts += 1;
+          scheduleRetry(350 * Math.pow(1.6, attempts));
+        } else {
+          setProfileStatus("missing");
+        }
+      } catch (error) {
+        console.error("Error resolving dealer profile:", error);
+        if (cancelled) return;
+        if (attempts < 4) {
+          attempts += 1;
+          scheduleRetry(350 * Math.pow(1.6, attempts));
+        } else {
+          setProfileStatus("missing");
+        }
+      }
+    };
+
+    attemptFetch();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userProfile?.dealer_id, userProfile?.dealers?.id, userProfile?.user_type]);
 
   const thisMonthJobs = jobs.filter((job) => {
     const jobDate = new Date(job.created_at);
@@ -143,20 +219,38 @@ const DealerAdminDashboard = () => {
     .join("")
     .slice(0, 2) || "SR";
 
-  if (missingDealerProfile) {
+  if (profileStatus !== "ready") {
+    const isFinalAttempt = profileStatus === "missing";
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
-        <Card className="max-w-lg bg-black/60 backdrop-blur border border-white/20">
-          <CardContent className="space-y-4 py-8 text-center">
-            <h1 className="text-2xl font-semibold">Dealer profile required</h1>
-            <p className="text-white/70">
-              Link your account to a dealership to access the admin dashboard.
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-white/70" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold">
+              {isFinalAttempt
+                ? "We’re almost ready"
+                : "Preparing your dealership workspace"}
+            </h1>
+            <p className="text-white/70 max-w-md mx-auto">
+              {isFinalAttempt
+                ? "We couldn’t confirm your dealership details automatically. Refresh to try again or contact support if this keeps happening."
+                : "We're syncing your new dealership details. This only takes a moment."}
             </p>
-            <Button onClick={() => navigate("/dealers/registration")}>
-              Start dealer registration
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+          {isFinalAttempt && (
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                onClick={() => window.location.reload()}
+              >
+                Refresh and try again
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

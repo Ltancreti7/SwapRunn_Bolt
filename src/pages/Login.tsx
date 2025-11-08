@@ -39,7 +39,7 @@ const Login = () => {
               size="lg"
               className="bg-[#E11900] hover:bg-[#B51400] text-white font-semibold"
             >
-              <Link to="/dealer/auth">Continue to Sales & Staff</Link>
+              <Link to="/dealer/signin">Continue to Sales & Staff</Link>
             </Button>
           </article>
 
