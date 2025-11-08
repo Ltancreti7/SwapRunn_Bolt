@@ -37,10 +37,50 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MobileApp } from "@/components/MobileApp";
 import { Header } from "@/components/Header";
+import DevRoutesIndex from "./pages/DevRoutesIndex";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const safeMode = params.has('safe');
+  const minimalMode = params.has('minimal');
+
+  if (safeMode) {
+    return (
+      <PlasmicRootProvider loader={PLASMIC}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <MobileApp>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <div className="min-h-screen">
+                    <Routes>
+                      <Route path="*" element={<Index />} />
+                    </Routes>
+                  </div>
+                </BrowserRouter>
+              </TooltipProvider>
+            </MobileApp>
+          </AuthProvider>
+        </QueryClientProvider>
+      </PlasmicRootProvider>
+    );
+  }
+
+  if (minimalMode) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={<Index />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
+  return (
   <PlasmicRootProvider loader={PLASMIC}>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -52,6 +92,9 @@ const App = () => (
               <Header />
               <div className="min-h-screen">
                 <Routes>
+                {import.meta.env.DEV && (
+                  <Route path="/__dev" element={<DevRoutesIndex />} />
+                )}
                 <Route path="/" element={<Index />} />
                 <Route path="/plasmic-home" element={<Homepage />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
@@ -179,6 +222,7 @@ const App = () => (
     </AuthProvider>
   </QueryClientProvider>
   </PlasmicRootProvider>
-);
+  );
+};
 
 export default App;

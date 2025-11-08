@@ -130,10 +130,46 @@ export const mockAuth = {
     return { data: { session: null }, error: null };
   },
 
+  // Mock getUser (subset of supabase-js API)
+  async getUser() {
+    const storedSession = localStorage.getItem('mock-session');
+    if (storedSession) {
+      try {
+        const session = JSON.parse(storedSession);
+        return { data: { user: session.user }, error: null };
+      } catch {
+        return { data: { user: null }, error: null };
+      }
+    }
+    return { data: { user: null }, error: null };
+  },
+
   // Mock signOut
   async signOut() {
     localStorage.removeItem('mock-session');
     return { error: null };
+  },
+
+  // Mock onAuthStateChange – immediately invokes callback with current session
+  onAuthStateChange(callback: (event: string, session: MockSession | null) => void) {
+    let stored: MockSession | null = null;
+    const raw = localStorage.getItem('mock-session');
+    if (raw) {
+      try { stored = JSON.parse(raw); } catch { stored = null; }
+    }
+    // Fire initial event asynchronously to mimic real client behavior
+    setTimeout(() => {
+      callback(stored ? 'SIGNED_IN' : 'SIGNED_OUT', stored);
+    }, 0);
+    return {
+      data: {
+        subscription: {
+          unsubscribe() {
+            // No-op for mock
+          }
+        }
+      }
+    } as any;
   },
 
   // Mock RPC calls
@@ -164,6 +200,8 @@ export const mockDatabase = {
       insert: (data: any) => createMockQuery(),
       update: (data: any) => createMockQuery(),
       eq: (column: string, value: any) => createMockQuery(),
+      neq: (column: string, value: any) => createMockQuery(),
+      is: (column: string, value: any) => createMockQuery(),
       maybeSingle: () => {
         try {
           if (table === 'profiles') {
@@ -202,6 +240,19 @@ export function makeMockClient(): any {
     auth: mockAuth,
     from: mockDatabase.from,
     rpc: mockAuth.rpc,
+    channel: (name: string) => {
+      console.log(`🔧 Local mode: Subscribing to channel ${name} (no-op)`);
+      const api = {
+        on: (_event: any, _filter: any, _callback?: any) => api,
+        subscribe: () => ({
+          unsubscribe() { /* no-op */ }
+        }),
+      } as any;
+      return api;
+    },
+    removeChannel: (_channel: any) => {
+      // no-op
+    },
     functions: {
       invoke: (funcName: string, options?: any) => {
         console.log(`🔧 Local mode: Skipping edge function ${funcName}`, options);

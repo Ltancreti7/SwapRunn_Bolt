@@ -35,22 +35,47 @@ if (!USE_LOCAL_DB && (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY)) {
 
 // Create either a real Supabase client or a mock client
 async function createSupabaseClient() {
-  if (USE_LOCAL_DB) {
-    const { makeMockClient } = await import("../../lib/mockAuth");
-    return makeMockClient() as any;
-  }
-  return createClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        storage: typeof window !== "undefined" ? window.localStorage : undefined,
-        persistSession: true,
-        autoRefreshToken: true,
+  try {
+    if (USE_LOCAL_DB) {
+      const { makeMockClient } = await import("../../lib/mockAuth");
+      return makeMockClient() as any;
+    }
+    return createClient<Database>(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          storage: typeof window !== "undefined" ? window.localStorage : undefined,
+          persistSession: true,
+          autoRefreshToken: true,
+        },
       },
-    },
-  );
+    );
+  } catch (e) {
+    console.error('Supabase client creation failed, falling back to stub client:', e);
+    // Minimal stub to keep app rendering
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: (cb: any) => {
+          setTimeout(() => cb('SIGNED_OUT', null), 0);
+          return { data: { subscription: { unsubscribe() {} } } };
+        },
+        signOut: async () => ({ error: null }),
+      },
+      from: () => ({ select: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }),
+      rpc: async () => ({ data: null, error: null }),
+      channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+      removeChannel: () => {},
+      functions: { invoke: async () => ({ data: null, error: null }) },
+    } as any;
+  }
 }
 
 // Top-level await is supported in Vite/ESM
 export const supabase: any = await createSupabaseClient();
+
+if (import.meta.env.DEV) {
+  // Simple health log so we know the client surfaced
+  console.log('[SupabaseClientReady] localMode=', USE_LOCAL_DB);
+}
