@@ -117,7 +117,7 @@ const DealerAuth = () => {
         .maybeSingle();
 
       if (profile?.user_type === "dealer") {
-        navigate(isAdminSignup ? "/dealer/admin" : "/dealer/dashboard", { replace: true });
+        navigate("/dealer/admin", { replace: true });
         return;
       }
 
@@ -143,7 +143,7 @@ const DealerAuth = () => {
         console.warn("Dealer profile create on verify failed, proceeding");
       }
 
-      navigate(isAdminSignup ? "/dealer/admin" : "/dealer/dashboard", { replace: true });
+      navigate("/dealer/admin", { replace: true });
     };
 
     // Run once on mount
@@ -311,8 +311,8 @@ const DealerAuth = () => {
           description: "Redirecting to dashboard...",
         });
 
-        // Redirect to appropriate dashboard
-        navigate(isAdminSignup ? "/dealer/admin" : "/dealer/dashboard", { replace: true });
+        // All dealers go to admin dashboard by default
+        navigate("/dealer/admin", { replace: true });
       } else {
         // Sign in with email and password
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -342,8 +342,8 @@ const DealerAuth = () => {
           description: "Redirecting to dashboard...",
         });
 
-        // Redirect to appropriate dashboard
-        navigate(isAdminSignup ? "/dealer/admin" : "/dealer/dashboard", { replace: true });
+        // All dealers go to admin dashboard by default
+        navigate("/dealer/admin", { replace: true });
       }
     } catch (error) {
       const message =

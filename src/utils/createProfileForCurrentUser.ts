@@ -39,27 +39,27 @@ export async function createProfileForCurrentUser(params: CreateProfileParams) {
     // Continue to fallbacks
   }
 
-  // 2) Dealer-specific RPC fallback
-  if (userType === "dealer") {
-    try {
-      const minimalCompany = (companyName ?? "Pending Dealership").trim() || "Pending Dealership";
-      const contactName = (name ?? user.email ?? "Dealer User").toString();
-      const businessEmail = user.email ?? `${user.id}@unknown.invalid`;
-      const phoneVal = phone ?? "";
+  // 2) Dealer-specific RPC fallback - DISABLED (RPC doesn't exist)
+  // if (userType === "dealer") {
+  //   try {
+  //     const minimalCompany = (companyName ?? "Pending Dealership").trim() || "Pending Dealership";
+  //     const contactName = (name ?? user.email ?? "Dealer User").toString();
+  //     const businessEmail = user.email ?? `${user.id}@unknown.invalid`;
+  //     const phoneVal = phone ?? "";
 
-      const { data, error } = await supabase.rpc("create_dealer_profile", {
-        p_user_id: user.id,
-        dealership_name: minimalCompany,
-        contact_name: contactName,
-        business_email: businessEmail,
-        address: "",
-        phone: phoneVal,
-      });
-      if (!error) return data;
-    } catch (_) {
-      // Continue to RLS inserts
-    }
-  }
+  //     const { data, error } = await supabase.rpc("create_dealer_profile", {
+  //       p_user_id: user.id,
+  //       dealership_name: minimalCompany,
+  //       contact_name: contactName,
+  //       business_email: businessEmail,
+  //       address: "",
+  //       phone: phoneVal,
+  //     });
+  //     if (!error) return data;
+  //   } catch (_) {
+  //     // Continue to RLS inserts
+  //   }
+  // }
 
   // 3) RLS-respecting direct inserts as last resort
   // Profiles: policy allows insert when id = auth.uid()
@@ -73,26 +73,25 @@ export async function createProfileForCurrentUser(params: CreateProfileParams) {
 
   await supabase.from("profiles").upsert(profilePayload, { onConflict: "user_id" });
 
-  if (userType === "dealer") {
-    // Dealership profile requires non-null columns
-    const dealershipPayload = {
-      user_id: user.id,
-      dealership_name: (companyName ?? "Pending Dealership").trim() || "Pending Dealership",
-      contact_name: (name ?? user.email ?? "Dealer User").toString(),
-      business_email: user.email ?? `${user.id}@unknown.invalid`,
-      address: "",
-      phone: (phone ?? "").toString(),
-    };
-    await supabase.from("dealership_profiles").upsert(dealershipPayload, { onConflict: "user_id" });
-  } else if (userType === "driver") {
-    // Drivers table requires NOT NULL full_name and phone
-    const driverPayload = {
-      user_id: user.id,
-      full_name: (name ?? "Pending Driver").toString(),
-      phone: (phone ?? "unknown").toString(),
-    } as Record<string, any>;
-    await supabase.from("drivers").upsert(driverPayload, { onConflict: "user_id" });
-  }
+  // Dealer and driver specific tables disabled - schema mismatch
+  // if (userType === "dealer") {
+  //   const dealershipPayload = {
+  //     user_id: user.id,
+  //     dealership_name: (companyName ?? "Pending Dealership").trim() || "Pending Dealership",
+  //     contact_name: (name ?? user.email ?? "Dealer User").toString(),
+  //     business_email: user.email ?? `${user.id}@unknown.invalid`,
+  //     address: "",
+  //     phone: (phone ?? "").toString(),
+  //   };
+  //   await supabase.from("dealership_profiles").upsert(dealershipPayload, { onConflict: "user_id" });
+  // } else if (userType === "driver") {
+  //   const driverPayload = {
+  //     user_id: user.id,
+  //     full_name: (name ?? "Pending Driver").toString(),
+  //     phone: (phone ?? "unknown").toString(),
+  //   } as Record<string, any>;
+  //   await supabase.from("drivers").upsert(driverPayload, { onConflict: "user_id" });
+  // }
 
   return { ok: true };
 }

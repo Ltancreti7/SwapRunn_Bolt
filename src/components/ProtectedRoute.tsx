@@ -101,7 +101,11 @@ export function ProtectedRoute({
 
     // Redirect to appropriate landing page for actual user type
     let redirectPath = "/";
-    if (userProfile?.user_type === "dealer" || userProfile?.user_type === "staff") {
+    if (userProfile?.user_type === "dealer") {
+      // All dealers go to admin dashboard (they can manage their own dealership)
+      redirectPath = "/dealer/admin";
+    } else if (userProfile?.user_type === "staff") {
+      // Staff members go to limited dashboard
       redirectPath = "/dealer/dashboard";
     } else if (userProfile?.user_type === "driver") {
       redirectPath = "/driver/dashboard";

@@ -13,6 +13,9 @@ const Index = () => {
       const role = userProfile.user_type ?? userProfile.role;
       switch (role) {
         case "dealer":
+          navigate("/dealer/admin");
+          break;
+        case "staff":
           navigate("/dealer/dashboard");
           break;
         case "driver":
