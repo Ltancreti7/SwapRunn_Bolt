@@ -71,4 +71,19 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Supabase Configuration for Testing
+
+For faster testing during development, email confirmation has been disabled:
+
+- **Local Development**: Already configured in `supabase/config.toml` with `enable_confirmations = false`
+- **Production/Staging**: To disable email confirmation in your Supabase dashboard:
+  1. Go to Authentication → Settings → Email Auth
+  2. Toggle OFF "Enable email confirmations"
+  3. Save changes
+
+This allows users to register and immediately sign in without needing to confirm their email address. 
+
+⚠️ **Important**: For production deployments, consider re-enabling email confirmation for security purposes.
+
 # Deploy trigger Fri Oct 24 01:25:11 UTC 2025

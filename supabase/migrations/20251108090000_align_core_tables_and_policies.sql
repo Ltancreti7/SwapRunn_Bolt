@@ -2,20 +2,16 @@
   # Align core SwapRunn tables and RLS policies with product requirements
 
   This migration performs the following operations:
-    - Ensures the user_type enum includes dealer, staff, driver, and admin variants
     - Renames legacy tables (dealers → dealership_profiles, dealership_staff → staff)
       while keeping backward-compatible views for existing code paths
     - Re-enables RLS on the renamed tables
-    - Repairs profile user_type assignments for staff members
     - Replaces critical RLS policies for drivers, staff, and jobs to match the
       authoritative requirements (including auth.uid() performance best practices)
+  
+  Note: Enum values 'staff' and 'admin' are added in 20251108085900_add_enum_values.sql
 */
 
--- 1. Align the user_type enum with required values
-ALTER TYPE public.user_type ADD VALUE IF NOT EXISTS 'staff';
-ALTER TYPE public.user_type ADD VALUE IF NOT EXISTS 'admin';
-
--- 2. Rename public.dealers → public.dealership_profiles (once) and recreate a compatibility view
+-- 1. Rename public.dealers → public.dealership_profiles (once) and recreate a compatibility view
 DO $$
 BEGIN
   IF EXISTS (
@@ -58,7 +54,7 @@ BEGIN
 END
 $$;
 
--- 3. Rename public.dealership_staff → public.staff and recreate compatibility view
+-- 2. Rename public.dealership_staff → public.staff and recreate compatibility view
 DO $$
 BEGIN
   IF EXISTS (
@@ -101,7 +97,7 @@ BEGIN
 END
 $$;
 
--- 4. Ensure RLS is enabled on the renamed tables (no-ops if already enabled)
+-- 3. Ensure RLS is enabled on the renamed tables (no-ops if already enabled)
 DO $$
 BEGIN
   IF EXISTS (
@@ -124,15 +120,16 @@ BEGIN
 END
 $$;
 
--- 5. Repair staff profile records that were mistakenly set to "dealer"
-UPDATE public.profiles p
-SET user_type = 'staff'
-FROM public.staff s
-WHERE s.user_id = p.user_id
-  AND COALESCE(s.role, '') <> 'owner'
-  AND p.user_type IS DISTINCT FROM 'staff';
+-- 4. Repair staff profile records (DISABLED - enum values can't be used in same transaction they're added)
+-- This will be handled by application logic or a later migration after commit
+-- UPDATE public.profiles p
+-- SET user_type = 'staff'
+-- FROM public.staff s
+-- WHERE s.user_id = p.user_id
+--   AND COALESCE(s.role, '') <> 'owner'
+--   AND p.user_type IS DISTINCT FROM 'staff';
 
--- 6. Replace the critical RLS policies with the authoritative versions
+-- 5. Replace the critical RLS policies with the authoritative versions
 
 -- Drivers table
 DROP POLICY IF EXISTS "Allow dealers, staff, or admins to add drivers" ON public.drivers;
@@ -212,7 +209,7 @@ TO authenticated
 USING (assigned_driver = (select auth.uid()))
 WITH CHECK (assigned_driver = (select auth.uid()));
 
--- 7. Refresh handle_new_user trigger to support admin profile creation
+-- 6. Refresh handle_new_user trigger to support admin profile creation
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 
