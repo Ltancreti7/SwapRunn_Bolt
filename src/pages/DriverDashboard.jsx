@@ -1,1 +1,1 @@
-export { default } from './DriverDashboard';
+export { default } from './DriverDashboard.tsx';
