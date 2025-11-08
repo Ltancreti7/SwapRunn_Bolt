@@ -72,18 +72,68 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
-## Supabase Configuration for Testing
+## Development Modes
 
-For faster testing during development, email confirmation has been disabled:
+This project supports two development modes:
 
-- **Local Development**: Already configured in `supabase/config.toml` with `enable_confirmations = false`
-- **Production/Staging**: To disable email confirmation in your Supabase dashboard:
-  1. Go to Authentication → Settings → Email Auth
-  2. Toggle OFF "Enable email confirmations"
-  3. Save changes
+### 1. Local Development (SQLite)
 
-This allows users to register and immediately sign in without needing to confirm their email address. 
+Perfect for fast iteration and testing without external dependencies:
 
-⚠️ **Important**: For production deployments, consider re-enabling email confirmation for security purposes.
+```bash
+# Set in .env.local
+VITE_USE_LOCAL_DB=true
+```
+
+- Uses SQLite database (better-sqlite3)
+- Mock authentication (no email confirmation)
+- All data stored locally in `local-dev.db`
+- No internet connection required
+
+### 2. Supabase Mode
+
+Production-like environment with full Supabase features:
+
+```bash
+# Set in .env.local
+VITE_USE_LOCAL_DB=false
+```
+
+- Uses hosted Supabase database
+- Full Supabase auth and features
+- Requires internet connection
+
+## Database Setup
+
+### For Local Development (SQLite)
+No setup required - database is created automatically.
+
+### For Supabase Mode
+1. Run the bootstrap script in your Supabase SQL Editor:
+   ```sql
+   -- Copy contents of supabase/BOOTSTRAP.sql
+   ```
+2. **Disable email confirmation** (for faster testing):
+   - Supabase Dashboard → Authentication → Settings → Email Auth
+   - Toggle OFF "Enable email confirmations"
+   - Save changes
+
+⚠️ **Important**: For production deployments, consider re-enabling email confirmation for security.
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# For local development
+echo "VITE_USE_LOCAL_DB=true" > .env.local
+npm run dev
+
+# For Supabase development  
+echo "VITE_USE_LOCAL_DB=false" > .env.local
+# Set up Supabase database (see above)
+npm run dev
+```
 
 # Deploy trigger Fri Oct 24 01:25:11 UTC 2025

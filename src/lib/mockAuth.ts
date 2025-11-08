@@ -151,6 +151,21 @@ export const mockAuth = {
 // Mock database operations
 export const mockDatabase = {
   from: (table: string) => ({
+    select: (columns?: string) => ({
+      eq: (column: string, value: any) => ({
+        maybeSingle: () => {
+          try {
+            if (table === 'profiles') {
+              const profile = localDbHelpers.getUserProfile(value);
+              return Promise.resolve({ data: profile, error: null });
+            }
+            return Promise.resolve({ data: null, error: null });
+          } catch (error) {
+            return Promise.resolve({ data: null, error: { message: (error as Error).message } });
+          }
+        }
+      })
+    }),
     update: (data: any) => ({
       eq: (column: string, value: any) => {
         try {
@@ -163,6 +178,14 @@ export const mockDatabase = {
           return Promise.resolve({ data: null, error: { message: (error as Error).message } });
         }
       }
-    })
+    }),
+    insert: (data: any) => {
+      try {
+        console.log(`🔧 Local mode: Skipping insert into ${table}`, data);
+        return Promise.resolve({ data: null, error: null });
+      } catch (error) {
+        return Promise.resolve({ data: null, error: { message: (error as Error).message } });
+      }
+    }
   })
 };
