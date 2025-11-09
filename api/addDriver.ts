@@ -1,4 +1,4 @@
-import { getAuthContext } from "./_utils/supabase";
+import { getAuthContext } from "./_utils/supabase.js";
 
 type ApiRequest = {
   method?: string;

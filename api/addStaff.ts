@@ -1,4 +1,4 @@
-import { createServiceClient, getAuthContext } from "./_utils/supabase";
+import { createServiceClient, getAuthContext } from "./_utils/supabase.js";
 
 type ApiRequest = {
   method?: string;
