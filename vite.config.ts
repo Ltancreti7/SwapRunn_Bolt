@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
           'dealer-operations': ['./src/pages/CreateJob.tsx', './src/pages/DealerSettings.tsx'],
           'driver-pages': [
             './src/pages/DriverAuth.tsx',
-            './src/pages/DriverDashboard.jsx',
+            './s'./src/pages/DriverDashboard.tsx
             './src/pages/DriverPersonalProfile.tsx',
             './src/pages/DriverRequests.tsx'
           ],
