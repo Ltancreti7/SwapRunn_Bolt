@@ -11,52 +11,68 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     historyApiFallback: {
       rewrites: [
-        { from: /\/dealership\/register/, to: '/signup' },
+        { from: /\/dealership\/register/, to: "/signup" },
       ],
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(
-    Boolean,
-  ),
+
+  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
   build: {
+    // ✅ Fix top-level await support
+    target: "es2022",
+
     rollupOptions: {
       output: {
         manualChunks: {
           // Vendor libraries
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'utils-vendor': ['clsx', 'tailwind-merge', 'date-fns', 'lucide-react'],
-          
-          // App chunks by feature - split dealer pages for better loading
-          'dealer-auth': ['./src/pages/DealerAuth.tsx'],
-          'dealer-dashboard': ['./src/pages/DealerDashboard.tsx', './src/pages/DealerAdminDashboard.tsx'],
-          'dealer-operations': ['./src/pages/CreateJob.tsx', './src/pages/DealerSettings.tsx'],
-          'driver-pages': [
-            './src/pages/DriverAuth.tsx',
-            './s'./src/pages/DriverDashboard.tsx
-            './src/pages/DriverPersonalProfile.tsx',
-            './src/pages/DriverRequests.tsx'
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
           ],
-          'coordinator-pages': [
-            './src/pages/SwapCoordinatorAuth.tsx',
-            './src/pages/SwapCoordinatorDashboard.tsx'
+          "form-vendor": ["react-hook-form", "@hookform/resolvers", "zod"],
+          "supabase-vendor": ["@supabase/supabase-js"],
+          "utils-vendor": ["clsx", "tailwind-merge", "date-fns", "lucide-react"],
+
+          // App chunks by feature
+          "dealer-auth": ["./src/pages/DealerAuth.tsx"],
+          "dealer-dashboard": [
+            "./src/pages/DealerDashboard.tsx",
+            "./src/pages/DealerAdminDashboard.tsx",
           ],
-          'services': [
-            './src/services/supabaseService.ts',
-            './src/services/distanceService.ts',
-            './src/services/notificationService.ts',
-            './src/services/smsService.ts'
-          ]
-        }
-      }
+          "dealer-operations": [
+            "./src/pages/CreateJob.tsx",
+            "./src/pages/DealerSettings.tsx",
+          ],
+
+          // ✅ Driver pages (confirmed)
+          "driver-pages": [
+            "./src/pages/DriverAuth.tsx",
+            "./src/pages/DriverDashboard.tsx",
+            "./src/pages/DriverRequests.tsx",
+          ],
+
+          // ✅ Shared services
+          services: [
+            "./src/services/supabaseService.ts",
+            "./src/services/distanceService.ts",
+            "./src/services/notificationService.ts",
+            "./src/services/smsService.ts",
+          ],
+        },
+      },
     },
-    chunkSizeWarningLimit: 1000 // Increase limit to 1000kb to reduce warnings for remaining chunks
-  }
+
+    // Raise size warning limit
+    chunkSizeWarningLimit: 1000,
+  },
 }));
